@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -15,7 +14,7 @@ export default function Login() {
     try {
       await login({ email, password });
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || err.message || 'Login failed');
     }
   };
 

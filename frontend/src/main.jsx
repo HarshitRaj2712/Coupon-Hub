@@ -16,7 +16,7 @@ if (!container) {
     <React.StrictMode>
       <App />
       {/* Toast notifications */}
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
     </React.StrictMode>
   );
 }

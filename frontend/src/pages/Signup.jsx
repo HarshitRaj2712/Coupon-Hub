@@ -1,4 +1,3 @@
-// src/pages/Signup.jsx
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -15,8 +14,9 @@ export default function Signup() {
     setError(null);
     try {
       await signup({ name, email, password });
+      // signup now navigates to /login itself
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed');
+      setError(err.response?.data?.message || err.message || 'Signup failed');
     }
   };
 

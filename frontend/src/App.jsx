@@ -10,7 +10,7 @@ import Navbar from './components/Navbar';
 import SecondaryNav from './components/SecondaryNav';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminReports from './pages/AdminReports';
-import Footer from './components/Footer';
+
 import FooterPro from './components/FooterPro';
 import './App.css';
 
@@ -35,7 +35,7 @@ function App() {
             {/* add coupon detail, admin routes etc */}
           </Routes>
         </div>
-        {/* <Footer /> */}
+        
         <FooterPro />
       </AuthProvider>
     </BrowserRouter>
