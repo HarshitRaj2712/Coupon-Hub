@@ -48,6 +48,27 @@ const dummyCoupons = [
     discountValue: 0,
     expiryDate: "2025-01-20",
     verified: false
+  },
+  {
+    _id: "6",
+    code: "FREEDEL",
+    title: "Free Delivery on All Orders",
+    store: "SHREE SAI MEDICO",
+    discountType: "free-shipping",
+    discountValue: 0,
+    expiryDate: "2025-01-20",
+    verified: false
+  }
+  ,
+  {
+    _id: "7",
+    code: "FREEDEL",
+    title: "Free Delivery on All Orders",
+    store: "GOOGLE",
+    discountType: "free-shipping",
+    discountValue: 0,
+    expiryDate: "2025-01-20",
+    verified: false
   }
 ];
 

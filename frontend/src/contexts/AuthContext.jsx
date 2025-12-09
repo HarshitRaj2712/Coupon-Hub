@@ -1,107 +1,109 @@
 // src/contexts/AuthContext.jsx
-import React, { createContext, useEffect, useState } from 'react';
-import api from '../api/axios';
-import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useEffect, useState } from "react";
+import axios from "axios";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const nav = useNavigate();
-  const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
-  });
-  const [loading, setLoading] = useState(false);
+// adjust to your backend URL
+const API_BASE = "http://localhost:5000/api";
 
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // On mount: load token + user from localStorage
   useEffect(() => {
-    if (user) localStorage.setItem('user', JSON.stringify(user));
-    else localStorage.removeItem('user');
-  }, [user]);
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-  const signup = async ({ name, email, password }) => {
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/signup', { name, email, password });
-      // server sets httpOnly refresh cookie; returns accessToken + user
-      const { accessToken } = res.data;
-      if (!accessToken) throw new Error('Signup failed: no access token returned');
-      // store access token + do not store refresh token (cookie)
-      localStorage.setItem('accessToken', accessToken);
-      // optionally you can set user, but we redirect to login so we don't auto-login
-      toast.success('Account created successfully — please login');
-      nav('/login');
-      return res.data;
-    } catch (err) {
-      // bubble up so Signup page can show the error too
-      const message = err?.response?.data?.message || err.message || 'Signup failed';
-      toast.error(message);
-      throw err;
-    } finally {
-      setLoading(false);
+    if (storedToken) {
+      setToken(storedToken);
+      axios.defaults.baseURL = API_BASE;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+    } else {
+      axios.defaults.baseURL = API_BASE;
     }
+
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    setLoading(false);
+  }, []);
+
+  // login: call /api/auth/login, store accessToken as "token"
+  const login = async ({ email, password }) => {
+    const res = await axios.post(
+      `${API_BASE}/auth/login`,
+      { email, password },
+      { withCredentials: true } // so refresh cookie is set
+    );
+
+    const { accessToken, user: userPayload } = res.data;
+
+    setToken(accessToken);
+    setUser(userPayload);
+
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("user", JSON.stringify(userPayload));
+
+    axios.defaults.baseURL = API_BASE;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
   };
 
-  const login = async ({ email, password }) => {
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      const { accessToken, user: u } = res.data;
-      if (!accessToken) throw new Error('Login failed: no access token returned');
-      localStorage.setItem('accessToken', accessToken);
-      setUser(u);
-      toast.success(`Welcome, ${u?.name || u?.email}`);
-      nav('/'); // go to home or dashboard
-      return res.data;
-    } catch (err) {
-      const message = err?.response?.data?.message || err.message || 'Login failed';
-      toast.error(message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  // signup: same pattern as login
+  const signup = async ({ name, email, password }) => {
+    const res = await axios.post(
+      `${API_BASE}/auth/signup`,
+      { name, email, password },
+      { withCredentials: true }
+    );
+
+    const { accessToken, user: userPayload } = res.data;
+
+    setToken(accessToken);
+    setUser(userPayload);
+
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("user", JSON.stringify(userPayload));
+
+    axios.defaults.baseURL = API_BASE;
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
   };
 
   const logout = async () => {
     try {
-      // server will clear refresh cookie and revoke token
-      await api.post('/auth/logout');
-    } catch (err) {
-      console.warn('Logout request failed:', err);
-    } finally {
-      localStorage.removeItem('accessToken');
-      setUser(null);
-      toast.success('Logged out');
-      nav('/login');
+      await axios.post(`${API_BASE}/auth/logout`, null, { withCredentials: true });
+    } catch (e) {
+      // ignore network errors on logout
     }
-  };
 
-  // restore session silently on startup (server uses cookie)
-  const tryRestoreSession = async () => {
-    try {
-      const res = await api.post('/auth/refresh', {}); // cookie sent automatically
-      const newAccessToken = res.data?.accessToken;
-      if (newAccessToken) {
-        localStorage.setItem('accessToken', newAccessToken);
-        const stored = localStorage.getItem('user');
-        if (stored) setUser(JSON.parse(stored));
-      } else {
-        localStorage.removeItem('accessToken');
-        setUser(null);
-      }
-    } catch (err) {
-      localStorage.removeItem('accessToken');
-      setUser(null);
-    }
-  };
+    setUser(null);
+    setToken(null);
 
-  useEffect(() => {
-    tryRestoreSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    delete axios.defaults.headers.common["Authorization"];
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signup, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        signup,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}

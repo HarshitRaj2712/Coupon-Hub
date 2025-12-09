@@ -1,44 +1,33 @@
-// server.js (or index.js) — corrected mongoose connect usage
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const morgan = require('morgan');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+// backend/server.js
+const express = require("express");
+const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
-const authRoutes = require('./routes/auth');
-const { requireAuth } = require('./middleware/auth');
+require("dotenv").config();
+
+const authRoutes = require("./routes/auth");
+const couponRoutes = require("./routes/coupons");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-app.use(morgan('dev'));
+// middlewares
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS: allow frontend origin and allow credentials (cookies)
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-app.use(cors({
-  origin: CLIENT_URL,
-  credentials: true
-}));
-
-// connect mongo — do NOT pass legacy options that are unsupported
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/couponhub';
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('Mongo connected'))
-  .catch(err => {
-    console.error('Mongo connection error', err);
-    process.exit(1);
-  });
+// mongo connection
+mongoose
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/couponwala")
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // routes
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/coupons", couponRoutes);
 
-// example protected route
-app.get('/api/me', requireAuth, async (req, res) => {
-  // req.user filled by middleware
-  res.json({ user: req.user });
-});
+app.get("/", (req, res) => res.send("API is running"));
 
-app.listen(PORT, () => console.log(`Auth server listening on ${PORT}`));
+// start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log("Server started on", PORT));

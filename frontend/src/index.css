@@ -1,8 +1,50 @@
-/* Keep this minimal while debugging */
+/* Load fonts */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+/* LIGHTER THEME COLORS */
+:root {
+  --bg-main: #074455;      /* lighter charcoal (new) */
+  --bg-panel: #1A1A1A;     /* darker panel */
+  --text-main: #F5EDE0;    /* beige */
+  --text-subtle: #E8DCC7;  /* lighter beige */
+}
+
+/* GLOBAL BASE */
 html, body, #root {
   height: 100%;
   margin: 0;
-  background: #f7fafc;
-  color: #111827;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+  background: var(--bg-main);    /* lighter background */
+  color: var(--text-main);
+
+  font-family: "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Heading font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Oswald", "Quicksand", sans-serif;
+  color: var(--text-main);
+}
+
+/* Default panel style */
+.card-default {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border: 1px solid rgba(245, 237, 224, 0.08);
+  border-radius: 8px;
+}
+
+/* Scrollbar theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #3b3b3b;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
 }
