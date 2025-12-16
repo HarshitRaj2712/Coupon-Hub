@@ -3,7 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
@@ -12,7 +11,10 @@ const couponRoutes = require("./routes/coupons");
 const app = express();
 
 // middlewares
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -26,8 +28,13 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/coupons", couponRoutes);
 
-app.get("/", (req, res) => res.send("API is running"));
+// health check
+app.get("/", (req, res) => {
+  res.send("API is running");
+});
 
 // start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log("Server started on", PORT));
+app.listen(PORT, () => {
+  console.log("Server started on port", PORT);
+});

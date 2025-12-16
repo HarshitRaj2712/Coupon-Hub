@@ -1,50 +1,170 @@
-/* Load fonts */
+/* =====================================================
+   FONTS
+===================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap');
 
-/* LIGHTER THEME COLORS */
-:root {
-  --bg-main: #074455;      /* lighter charcoal (new) */
-  --bg-panel: #1A1A1A;     /* darker panel */
-  --text-main: #F5EDE0;    /* beige */
-  --text-subtle: #E8DCC7;  /* lighter beige */
+/* =====================================================
+   THEME VARIABLES — ROOMZY STYLE
+===================================================== */
+
+/* 🌤️ LIGHT THEME */
+:root[data-theme="light"] {
+  /* Backgrounds */
+  --bg-main: #F7F3F2;
+  --bg-panel: #FFFFFF;
+  --bg-muted: #EFE6E4;
+
+  /* Text */
+  --text-main: #2B1E1E;
+  --text-muted: #7A5C5C;
+
+  /* Accent (burgundy) */
+  --accent: #6F1D2C;
+  --accent-hover: #5B1623;
+  --accent-soft: #E6C9CE;
+
+  /* Borders */
+  --border-color: #E3D5D8;
+
+   --navbar-bg: var(--bg-panel);
+
+  /* Buttons */
+  --btn-gradient: linear-gradient(135deg, #6F1D2C, #8A2D3C);
+  --btn-gradient-hover: linear-gradient(135deg, #5B1623, #7A2333);
+
+  /* FOOTER (Roomzy style) */
+  --footer-bg: #6F1D2C;
+  --footer-text: #FFFFFF;
+  --footer-muted: #F1DADA;
 }
 
-/* GLOBAL BASE */
+/* 🌙 DARK THEME */
+:root[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-main: #0F0E0E;
+  --bg-panel: #1B1717;
+  --bg-muted: #2A2223;
+
+  /* Text */
+  --text-main: #F2EDED;
+  --text-muted: #C6AEB2;
+
+  /* Accent */
+  --accent: #A8475D;
+  --accent-hover: #C0566E;
+  --accent-soft: #3A2228;
+
+  /* Borders */
+  --border-color: #2F2527;
+
+  --navbar-bg: rgba(27, 23, 23, 0.85); 
+
+  /* Buttons */
+  --btn-gradient: linear-gradient(135deg, #A8475D, #C0566E);
+  --btn-gradient-hover: linear-gradient(135deg, #C0566E, #D96C85);
+
+  /* FOOTER (Roomzy style) */
+  --footer-bg: #A8475D;
+  --footer-text: #FFFFFF;
+  --footer-muted: #F3D6DC;
+}
+
+/* =====================================================
+   GLOBAL BASE STYLES
+===================================================== */
+
 html, body, #root {
   height: 100%;
   margin: 0;
-
-  background: var(--bg-main);    /* lighter background */
+  background: var(--bg-main);
   color: var(--text-main);
-
-  font-family: "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
+  font-family: "Quicksand", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Heading font */
+/* Headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Oswald", "Quicksand", sans-serif;
   color: var(--text-main);
 }
 
-/* Default panel style */
+/* =====================================================
+   COMMON UI UTILITIES
+===================================================== */
+
 .card-default {
   background: var(--bg-panel);
-  color: var(--text-main);
-  border: 1px solid rgba(245, 237, 224, 0.08);
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
 }
 
-/* Scrollbar theme */
+.input-default {
+  background: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  outline: none;
+}
+.input-default::placeholder {
+  color: var(--text-muted);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* =====================================================
+   GRADIENT BUTTONS
+===================================================== */
+
+.btn-gradient {
+  background: var(--btn-gradient);
+  color: #ffffff;
+  border-radius: 14px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.btn-gradient:hover {
+  background: var(--btn-gradient-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.btn-gradient:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #3b3b3b;
+  background: var(--accent-soft);
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-main);
+}
+/* =====================================================
+   ANIMATIONS verifiedIn*/
+
+@keyframes verifiedIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

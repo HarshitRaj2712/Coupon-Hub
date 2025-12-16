@@ -1,12 +1,12 @@
-// src/pages/AddCoupon.jsx
-import React, { useContext, useState } from "react";
+// src/pages/EditCoupon.jsx
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 
 const API_BASE = "http://localhost:5000/api";
 
-/* CATEGORY OPTIONS */
 const CATEGORIES = [
   "Electronics",
   "Fashion",
@@ -19,8 +19,10 @@ const CATEGORIES = [
   "Other",
 ];
 
-export default function AddCoupon() {
-  const { user, token } = useContext(AuthContext) || {};
+export default function EditCoupon() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { token } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     title: "",
@@ -31,69 +33,105 @@ export default function AddCoupon() {
     expiryDate: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  /* ---------------- FETCH COUPON ---------------- */
+  useEffect(() => {
+    async function fetchCoupon() {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `${API_BASE}/coupons/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        const c = res.data.coupon;
+        setForm({
+          title: c.title || "",
+          store: c.store || "",
+          category: c.category || "",
+          code: c.code || "",
+          description: c.description || "",
+          expiryDate: c.expiryDate
+            ? c.expiryDate.slice(0, 10)
+            : "",
+        });
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load coupon");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCoupon();
+  }, [id, token]);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  /* ---------------- UPDATE COUPON ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!user) {
-      toast.error("Please login to add a coupon");
-      return;
-    }
-
-    const accessToken = token || localStorage.getItem("token");
-    if (!accessToken) {
-      toast.error("Session expired. Please login again.");
-      return;
-    }
-
     try {
-      setLoading(true);
+      setSaving(true);
 
-      const res = await axios.post(
-        `${API_BASE}/coupons`,
+      await axios.put(
+        `${API_BASE}/coupons/${id}`,
         form,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
           },
         }
       );
 
-      toast.success("Coupon added!");
-
-      setForm({
-        title: "",
-        store: "",
-        category: "",
-        code: "",
-        description: "",
-        expiryDate: "",
-      });
+      toast.success("Coupon updated successfully");
+      navigate("/dashboard");
     } catch (err) {
-      const msg = err.response?.data?.message || "Failed to add coupon";
+      const msg =
+        err.response?.data?.message || "Update failed";
       toast.error(msg);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  /* ---------------- UI STATES ---------------- */
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-muted">
+        Loading coupon…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-20 text-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
-      {/* HEADER */}
       <h1 className="text-2xl font-heading font-bold mb-2">
-        Add a Coupon
+        Edit Coupon
       </h1>
 
-      <p className="text-sm mb-6 text-muted">
-        Share a coupon you discovered. Help others save money.
+      <p className="text-sm text-muted mb-6">
+        Update your coupon details
       </p>
 
-      {/* FORM */}
       <form
         onSubmit={handleSubmit}
         className="card-default p-5 space-y-4"
@@ -109,7 +147,6 @@ export default function AddCoupon() {
               value={form.title}
               onChange={handleChange}
               required
-              placeholder="Flat 20% off on shoes"
               className="w-full p-2 rounded input-default"
             />
           </div>
@@ -123,7 +160,6 @@ export default function AddCoupon() {
               value={form.store}
               onChange={handleChange}
               required
-              placeholder="Amazon, Flipkart..."
               className="w-full p-2 rounded input-default"
             />
           </div>
@@ -131,7 +167,6 @@ export default function AddCoupon() {
 
         {/* ROW 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* CATEGORY DROPDOWN */}
           <div>
             <label className="text-sm block mb-1">
               Category *
@@ -144,9 +179,9 @@ export default function AddCoupon() {
               className="w-full p-2 rounded input-default"
             >
               <option value="">Select category</option>
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>
@@ -167,7 +202,7 @@ export default function AddCoupon() {
           </div>
         </div>
 
-        {/* COUPON CODE */}
+        {/* CODE */}
         <div>
           <label className="text-sm block mb-1">
             Coupon Code *
@@ -177,7 +212,6 @@ export default function AddCoupon() {
             value={form.code}
             onChange={handleChange}
             required
-            placeholder="SAVE20"
             className="w-full p-2 rounded input-default font-mono"
           />
         </div>
@@ -192,19 +226,29 @@ export default function AddCoupon() {
             value={form.description}
             onChange={handleChange}
             rows={3}
-            placeholder="Min order value, conditions, etc."
             className="w-full p-2 rounded input-default"
           />
         </div>
 
-        {/* SUBMIT */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-gradient px-5 py-2 rounded-md text-sm"
-        >
-          {loading ? "Saving..." : "Add Coupon"}
-        </button>
+        {/* ACTIONS */}
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-gradient px-5 py-2 rounded-md text-sm"
+          >
+            {saving ? "Saving..." : "Update Coupon"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            className="px-4 py-2 rounded-md text-sm border"
+            style={{ borderColor: "var(--border-color)" }}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );

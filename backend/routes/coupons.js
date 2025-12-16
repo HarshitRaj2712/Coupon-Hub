@@ -5,13 +5,33 @@ const router = express.Router();
 const Coupon = require("../models/Coupon");
 const { requireAuth } = require("../middleware/auth");
 
-// POST /api/coupons  (protected)
+/**
+ * GET /api/coupons
+ * Public – fetch active coupons
+ */
+router.get("/", async (req, res) => {
+  try {
+    const coupons = await Coupon.find({
+      expiryDate: { $gte: new Date() }
+    }).sort({ createdAt: -1 });
+
+    res.json({ coupons });
+  } catch (err) {
+    console.error("🔥 FETCH COUPONS ERROR:", err);
+    res.status(500).json({ message: "Failed to fetch coupons" });
+  }
+});
+
+/**
+ * POST /api/coupons
+ * Protected – add coupon
+ */
 router.post("/", requireAuth, async (req, res) => {
   try {
     const { title, store, category, code, description, expiryDate } = req.body;
 
     if (!title || !store || !code || !expiryDate) {
-      return res.status(400).json({ message: "Title, store, code, expiryDate required" });
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const coupon = await Coupon.create({
@@ -25,17 +45,11 @@ router.post("/", requireAuth, async (req, res) => {
       verified: false
     });
 
-    return res.status(201).json({
-      message: "Coupon created",
-      coupon
-    });
+    res.status(201).json({ message: "Coupon created", coupon });
 
   } catch (err) {
-    console.error("🔥 COUPON CREATION ERROR:", err.name, err.message, err);
-    res.status(500).json({
-      message: "Server error creating coupon",
-      error: err.message
-    });
+    console.error("🔥 CREATE COUPON ERROR:", err);
+    res.status(500).json({ message: "Server error creating coupon" });
   }
 });
 

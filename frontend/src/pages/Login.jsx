@@ -1,54 +1,61 @@
+// src/pages/Login.jsx
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export default function Login() {
   const { login, loading } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  const handle = async (e) => {
+  // redirect after login
+  const redirectTo = location.state?.from || "/";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
     try {
       await login({ email, password });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Login failed"
+      );
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex justify-center items-center px-4"
-      style={{ background: "linear-gradient(to bottom right, #1A1A1A, #2A2A2A)" }}
-    >
-      <div
-        className="w-full max-w-md p-8 rounded-xl shadow-xl backdrop-blur-xl"
-        style={{
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.15)"
-        }}
-      >
-        <h2 className="text-3xl font-bold text-center mb-6" style={{ color: "#F5EDE0" }}>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md card-default p-6 shadow-xl">
+        <h2 className="text-2xl font-heading font-bold mb-2">
           Login
         </h2>
 
+        <p className="text-sm text-muted mb-4">
+          Welcome back. Please login to continue.
+        </p>
+
         {error && (
-          <div className="mb-3 text-red-400 bg-red-900/30 px-3 py-2 rounded">
+          <div className="mb-3 text-sm text-red-500">
             {error}
           </div>
         )}
 
-        <form onSubmit={handle} className="space-y-4">
-
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full p-3 rounded-lg bg-[#2A2A2A] text-[#F5EDE0] placeholder-gray-400 border border-[#3A3A3A] focus:ring-2 focus:ring-[#E8DCC7]"
+            placeholder="Email address"
             required
+            className="w-full p-3 rounded-md input-default"
           />
 
           <input
@@ -56,27 +63,27 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-3 rounded-lg bg-[#2A2A2A] text-[#F5EDE0] placeholder-gray-400 border border-[#3A3A3A] focus:ring-2 focus:ring-[#E8DCC7]"
             required
+            className="w-full p-3 rounded-md input-default"
           />
 
           <button
             type="submit"
-            className="w-full py-3 rounded-lg font-semibold transition"
-            style={{
-              background: loading ? "#C7BBA6" : "#F5EDE0",
-              color: "#1A1A1A"
-            }}
             disabled={loading}
+            className="btn-gradient w-full py-2 rounded-md"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-4" style={{ color: "#E8DCC7" }}>
-          Don't have an account?{" "}
-          <Link to="/signup" className="underline hover:text-white">
-            Sign Up
+        <p className="mt-4 text-sm text-muted text-center">
+          Don’t have an account?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold hover:underline"
+            style={{ color: "var(--accent)" }}
+          >
+            Sign up
           </Link>
         </p>
       </div>

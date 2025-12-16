@@ -1,90 +1,112 @@
 // src/components/TopStores.jsx
-import React, { useMemo } from "react";
-import dummyCoupons from "../data/dummyCoupons";
-import { ShoppingBag } from "lucide-react";
+import React from "react";
 
-export default function TopStores({ limit = 24 }) {
-  const { stores, counts } = useMemo(() => {
-    const map = new Map();
-    dummyCoupons.forEach((c) => {
-      const name = c.store || "Unknown";
-      map.set(name, (map.get(name) || 0) + 1);
-    });
-    const sorted = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
-    return {
-      stores: sorted.map(([name]) => name).slice(0, limit),
-      counts: Object.fromEntries(sorted.slice(0, limit)),
-    };
-  }, [limit]);
+/* ================= STORE LOGO MAP =================
+   Place logos in: public/logos/
+   Example:
+   public/logos/amazon.png
+   public/logos/flipkart.png
+=================================================== */
+const STORE_LOGOS = {
+  Amazon: "/public/amazon.png",
+  Flipkart: "/public/flipkart.png",
+  Myntra: "/public/myntra.png",
+  Swiggy: "/public/swiggy.png",
+  Zomato: "/public/zomato.png",
+};
 
-  const logoFor = (store) =>
-    `/stores/${store.toLowerCase().replace(/\s+/g, "-")}.png`;
+export default function TopStores({ coupons = [] }) {
+  /* BUILD STORE → COUNT MAP */
+  const storeMap = coupons.reduce((acc, c) => {
+    if (!c.store) return acc;
+    acc[c.store] = (acc[c.store] || 0) + 1;
+    return acc;
+  }, {});
+
+  const stores = Object.keys(storeMap);
 
   const onPick = (store) => {
-    window.dispatchEvent(new CustomEvent("filters", { detail: { store } }));
-    const el = document.querySelector("#coupons-section");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.dispatchEvent(
+      new CustomEvent("filters", { detail: { store } })
+    );
   };
 
-  if (!stores?.length) return null;
+  if (!stores.length) return null;
 
   return (
-    <section className="my-6">
+    <section className="my-12">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-[#F5EDE0]">Top Stores</h1>
-          <div className="text-sm text-[#E8DCC7]">Browse by store</div>
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold">
+            Top Stores
+          </h2>
+          
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-          {stores.map((store) => {
-            const count = counts[store] || 0;
-
-            return (
+        {/* GRID */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+          {stores.map((store) => (
+            <div key={store} className="relative group">
               <button
-                key={store}
                 onClick={() => onPick(store)}
-                className="relative group bg-[#0f0f10] hover:shadow-lg border border-[#2a2a2a] rounded-lg p-3 flex flex-col items-center gap-2 text-center transition transform hover:-translate-y-1"
-                aria-label={`View ${count} coupons from ${store}`}
-                title={`${store} – ${count} coupon${count !== 1 ? "s" : ""}`}
+                className="w-full rounded-2xl p-4 text-sm font-medium transition-all
+                           hover:-translate-y-1 hover:shadow-lg"
+                style={{
+                  background: "var(--bg-panel)",
+                  border: "1px solid var(--border-color)",
+                  color: "var(--text-main)",
+                }}
               >
-                {/* Store Logo */}
-                <div className="w-16 h-16 rounded-full bg-[#111] flex items-center justify-center overflow-hidden relative">
-                  <img
-                    src={logoFor(store)}
-                    alt={`${store} logo`}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                      const parent = e.currentTarget.parentNode;
-                      if (!parent.querySelector(".fallback-init")) {
-                        const div = document.createElement("div");
-                        div.className = "fallback-init text-[#E8DCC7] text-lg font-semibold";
-                        div.textContent = store[0]?.toUpperCase() || "?";
-                        parent.appendChild(div);
-                      }
-                    }}
-                  />
+                {/* LOGO CONTAINER */}
+                <div
+                  className="w-12 h-12 mx-auto mb-2 rounded-full
+                             flex items-center justify-center"
+                  style={{
+                    background: "var(--accent-soft)",
+                  }}
+                >
+                  {STORE_LOGOS[store] ? (
+                    <img
+                      src={STORE_LOGOS[store]}
+                      alt={`${store} logo`}
+                      loading="lazy"             // ✅ LAZY LOADING
+                      className="w-8 h-8 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    /* FALLBACK LETTER */
+                    <span
+                      className="text-lg font-semibold"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {store[0]}
+                    </span>
+                  )}
                 </div>
 
-                <div className="text-sm font-medium text-[#F5EDE0] truncate max-w-[90px]">
+                {/* STORE NAME */}
+                <div className="text-center truncate">
                   {store}
                 </div>
-
-                {/* Hover overlay with coupon count */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-lg pointer-events-none">
-                  <div className="flex items-center gap-2 bg-black/40 px-3 py-2 rounded">
-                    <ShoppingBag size={16} />
-                    <span className="text-sm font-semibold">
-                      {count} coupon{count !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </div>
-
-             
               </button>
-            );
-          })}
+
+              {/* COUPON COUNT BADGE */}
+              <div
+                className="pointer-events-none absolute -top-2 right-2 px-2 py-1
+                           rounded-md text-xs font-semibold opacity-0 scale-95
+                           transition-all group-hover:opacity-100 group-hover:scale-100"
+                style={{
+                  background: "var(--accent)",
+                  color: "#fff",
+                }}
+              >
+                {storeMap[store]} coupons
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

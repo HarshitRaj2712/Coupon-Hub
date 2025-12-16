@@ -1,135 +1,131 @@
 // src/pages/Home.jsx
 import React, { useEffect, useState } from "react";
-import HeroSlider from "../components/HeroSlider";
-import DealsOfDay from "../components/DealsOfDay";
-import TopStores from "../components/TopStores";
+import axios from "axios";
 import CouponList from "../components/CouponList";
-import dummyCoupons from "../data/dummyCoupons";
+import HeroSlider from "../components/HeroSlider";
+import TopStores from "../components/TopStores";
 
-/**
- * Home page
- * - Shows HeroSlider, DealsOfDay, TopStores, and the CouponList
- * - Listens for globalSearch, filters and showDeal custom events
- * - Uses dummyCoupons (frontend-only) as the data source
- */
+const API_BASE = "http://localhost:5000/api";
 
 export default function Home() {
   const [coupons, setCoupons] = useState([]);
-  const [q, setQ] = useState("");
-  const [activeFilters, setActiveFilters] = useState({ store: "", category: "" });
+  const [filtered, setFiltered] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // utility: apply current search + filters to dummyCoupons
-  const applyAll = ({ search = q, store = activeFilters.store, category = activeFilters.category } = {}) => {
-    let list = dummyCoupons.slice();
+  const [filters, setFilters] = useState({
+    store: null,
+    category: null,
+    q: "",
+  });
 
-    // apply store filter
-    if (store) list = list.filter((c) => (c.store || "").toLowerCase() === store.toLowerCase());
+  /* ---------------- FETCH COUPONS ---------------- */
+  useEffect(() => {
+    async function fetchCoupons() {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${API_BASE}/coupons`);
+        setCoupons(res.data.coupons || []);
+        setFiltered(res.data.coupons || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load coupons");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCoupons();
+  }, []);
 
-    // apply category filter
-    if (category) {
-      list = list.filter((c) => (c.category || "").toLowerCase() === category.toLowerCase());
+  /* ---------------- APPLY FILTERS ---------------- */
+  useEffect(() => {
+    let list = [...coupons];
+
+    if (filters.store) {
+      list = list.filter((c) => c.store === filters.store);
     }
 
-    // apply search query
-    if (search && search.trim()) {
-      const s = search.trim().toLowerCase();
+    if (filters.category) {
+      list = list.filter((c) => c.category === filters.category);
+    }
+
+    if (filters.q) {
+      const q = filters.q.toLowerCase();
       list = list.filter(
         (c) =>
-          (c.title || "").toLowerCase().includes(s) ||
-          (c.store || "").toLowerCase().includes(s) ||
-          (c.code || "").toLowerCase().includes(s)
+          c.title?.toLowerCase().includes(q) ||
+          c.store?.toLowerCase().includes(q) ||
+          c.code?.toLowerCase().includes(q)
       );
     }
 
-    setCoupons(list);
-  };
+    setFiltered(list);
+  }, [filters, coupons]);
 
+  /* ---------------- GLOBAL EVENTS ---------------- */
   useEffect(() => {
-    // initial load
-    setCoupons(dummyCoupons);
+    const onFilter = (e) =>
+      setFilters((prev) => ({ ...prev, ...e.detail }));
 
-    // handlers
-    const onSearch = (e) => {
-      const query = e?.detail?.q ?? "";
-      setQ(query);
-      applyAll({ search: query, store: activeFilters.store, category: activeFilters.category });
-    };
+    const onSearch = (e) =>
+      setFilters((prev) => ({ ...prev, q: e.detail.q || "" }));
 
-    const onFilters = (e) => {
-      const { store = "", category = "" } = e?.detail || {};
-      const newFilters = { store, category };
-      setActiveFilters(newFilters);
-      applyAll({ search: q, store, category });
-    };
-
-    const onShowDeal = (e) => {
-      const { couponId } = e?.detail || {};
-      if (!couponId) return;
-      const found = dummyCoupons.find((c) => c._id === couponId);
-      if (found) {
-        setCoupons([found]);
-      }
-    };
-
+    window.addEventListener("filters", onFilter);
     window.addEventListener("globalSearch", onSearch);
-    window.addEventListener("filters", onFilters);
-    window.addEventListener("showDeal", onShowDeal);
 
     return () => {
+      window.removeEventListener("filters", onFilter);
       window.removeEventListener("globalSearch", onSearch);
-      window.removeEventListener("filters", onFilters);
-      window.removeEventListener("showDeal", onShowDeal);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
+  }, []);
 
-  // When activeFilters change via other means, reapply (keeps state consistent)
-  useEffect(() => {
-    applyAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilters]);
+  /* ---------------- UI STATES ---------------- */
+  if (loading) {
+    return (
+      <div className="text-center py-20 text-muted">
+        Loading coupons…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    <div>
+    <div className="space-y-10">
+      {/* HERO */}
       <HeroSlider />
 
-      <div className="container mx-auto px-4">
-        <DealsOfDay />
-        <TopStores />
+      {/* TOP STORES */}
+      <TopStores coupons={coupons} />
 
-        <div id="coupons-section" className="mt-6">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div>
-              <div className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{coupons.length}</span> coupon{coupons.length !== 1 ? "s" : ""}
-              </div>
-              {(activeFilters.store || activeFilters.category || q) && (
-                <div className="mt-1 text-xs text-gray-500">
-                  {activeFilters.store && <span className="mr-2">Store: <strong>{activeFilters.store}</strong></span>}
-                  {activeFilters.category && <span className="mr-2">Category: <strong>{activeFilters.category}</strong></span>}
-                  {q && <span>Search: <strong>{q}</strong></span>}
-                </div>
-              )}
-            </div>
+      {/* COUPONS */}
+      <section id="coupons-section">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">
+            {filtered.length} Coupons Available
+          </h2>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  // reset filters & search
-                  setQ("");
-                  setActiveFilters({ store: "", category: "" });
-                  setCoupons(dummyCoupons);
-                }}
-                className="px-3 py-1 border rounded text-sm"
-              >
-                Clear all
-              </button>
-            </div>
-          </div>
-
-          <CouponList coupons={Array.isArray(coupons) ? coupons : []} />
+          {(filters.store || filters.category || filters.q) && (
+            <button
+              onClick={() =>
+                setFilters({ store: null, category: null, q: "" })
+              }
+              className="text-sm font-medium hover:underline"
+              style={{ color: "var(--accent)" }}
+            >
+              Clear filters
+            </button>
+          )}
         </div>
-      </div>
+
+        <CouponList coupons={filtered} />
+      </section>
     </div>
   );
 }

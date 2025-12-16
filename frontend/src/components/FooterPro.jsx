@@ -1,24 +1,21 @@
 // src/components/FooterPro.jsx
 import React, { useEffect, useState } from "react";
-import { Facebook, Twitter, Instagram, Linkedin, ArrowUp, Globe } from "lucide-react";
-import toast from "react-hot-toast";
-import { trackEvent } from "../utils/analytics";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  ArrowUp,
+} from "lucide-react";
 
-/**
- * Compact FooterPro (Beige + Dark Gray)
- * - smaller, compact layout
- * - newsletter + social icons + simple links
- * - back-to-top button
- */
-
-const BEIGE = "#F5EDE0";
-const ACCENT = "#E8DCC7";
-const DARK_BG = "#1A1A1A";
-const PANEL_BG = "rgba(26,26,26,0.92)";
+/*
+  Footer styled to match Roomzy reference
+  - Solid burgundy background
+  - White text
+  - Same look in light & dark mode
+*/
 
 export default function FooterPro() {
-  const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [showBack, setShowBack] = useState(false);
 
   useEffect(() => {
@@ -27,127 +24,93 @@ export default function FooterPro() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const subscribe = async (e) => {
-    e.preventDefault();
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      toast.error("Enter a valid email");
-      return;
-    }
-    setSubmitting(true);
-    trackEvent("newsletter_subscribe_attempt", null, { email });
-    try {
-      await new Promise((res) => setTimeout(res, 700));
-      const key = "newsletter_subscribers";
-      const raw = localStorage.getItem(key);
-      const arr = raw ? JSON.parse(raw) : [];
-      arr.push({ email, ts: new Date().toISOString() });
-      localStorage.setItem(key, JSON.stringify(arr.slice(-200)));
-      toast.success("Subscribed — check your inbox!");
-      trackEvent("newsletter_subscribe_success", null, { email });
-      setEmail("");
-    } catch (err) {
-      toast.error("Subscription failed");
-      trackEvent("newsletter_subscribe_fail", null, { email, err: String(err) });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollTop = () =>
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <footer
-      style={{ background: PANEL_BG, color: BEIGE }}
-      className="mt-12"
-      aria-label="Site footer"
+      style={{
+        background: "var(--footer-bg)",
+        color: "var(--footer-text)",
+      }}
+      className="mt-20"
     >
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-
-          {/* Brand + short */}
+      <div className="container mx-auto px-6 py-10">
+        {/* TOP GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* BRAND */}
           <div>
-            <div className="flex items-center gap-3">
-              <div style={{ color: BEIGE }} className="text-xl font-heading font-bold">Coupon-Wala</div>
-            </div>
-            <p className="mt-2 text-sm" style={{ color: ACCENT }}>
-              Curated coupons and verified deals. Save time — save money.
+            <h3 className="text-xl font-extrabold">Coupon-Hub</h3>
+            <p
+              className="mt-3 text-sm leading-relaxed"
+              style={{ color: "var(--footer-muted)" }}
+            >
+              Connecting shoppers with the best deals.
+              Save more, shop smarter — all in one place.
             </p>
 
             <div className="mt-4 flex gap-3">
-              <a aria-label="Facebook" href="#" className="p-2 rounded hover:bg-[#222] transition" style={{ color: BEIGE }}>
-                <Facebook size={16} />
-              </a>
-              <a aria-label="Twitter" href="#" className="p-2 rounded hover:bg-[#222] transition" style={{ color: BEIGE }}>
-                <Twitter size={16} />
-              </a>
-              <a aria-label="Instagram" href="#" className="p-2 rounded hover:bg-[#222] transition" style={{ color: BEIGE }}>
-                <Instagram size={16} />
-              </a>
-              <a aria-label="LinkedIn" href="#" className="p-2 rounded hover:bg-[#222] transition" style={{ color: BEIGE }}>
-                <Linkedin size={16} />
-              </a>
+              {[Facebook, Twitter, Instagram, Linkedin].map(
+                (Icon, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    aria-label="Social"
+                    className="p-2 rounded-md hover:bg-white/10 transition"
+                  >
+                    <Icon size={16} />
+                  </a>
+                )
+              )}
             </div>
           </div>
 
-          {/* Newsletter */}
+          {/* NAVIGATION */}
           <div>
-            <h4 className="text-sm font-semibold" style={{ color: BEIGE }}>Get top deals</h4>
-            <p className="text-xs mt-1 mb-3" style={{ color: ACCENT }}>Weekly newsletter — curated coupons & exclusive offers.</p>
-            <form onSubmit={subscribe} className="flex gap-2">
-              <label htmlFor="footer-email" className="sr-only">Email</label>
-              <input
-                id="footer-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="flex-1 p-2 rounded-md text-sm bg-[#111] placeholder:opacity-60 border border-[#2a2a2a]"
-                style={{ color: BEIGE }}
-                aria-label="Subscribe email"
-              />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-3 py-2 rounded-md font-semibold transition"
-                style={{ background: BEIGE, color: DARK_BG }}
-              >
-                {submitting ? "..." : "Subscribe"}
-              </button>
-            </form>
+            <h4 className="font-semibold mb-3">Navigation</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:underline">Home</a></li>
+              <li><a href="#" className="hover:underline">About Us</a></li>
+              <li><a href="#" className="hover:underline">Help Center</a></li>
+            </ul>
           </div>
 
-          {/* Quick links */}
+          {/* RESOURCES */}
           <div>
-            <h4 className="text-sm font-semibold" style={{ color: BEIGE }}>Quick Links</h4>
-            <ul className="mt-2 space-y-2 text-sm" style={{ color: ACCENT }}>
-              <li><a href="#" className="hover:underline">Browse Coupons</a></li>
-              <li><a href="#" className="hover:underline">Add a Coupon</a></li>
-              <li><a href="#" className="hover:underline">Help / FAQ</a></li>
-              <li><a href="#" className="hover:underline">Privacy</a></li>
+            <h4 className="font-semibold mb-3">Resources</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:underline">How to Find Deals</a></li>
+              <li><a href="#" className="hover:underline">How Listing Works</a></li>
+            </ul>
+          </div>
+
+          {/* LEGAL */}
+          <div>
+            <h4 className="font-semibold mb-3">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:underline">Privacy Policy</a></li>
+              <li><a href="#" className="hover:underline">Terms of Service</a></li>
             </ul>
           </div>
         </div>
 
-        {/* bottom row */}
-        <div className="mt-8 border-t border-[#222] pt-4 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="text-sm" style={{ color: ACCENT }}>
-            © {new Date().getFullYear()} Coupon-Wala — All rights reserved.
-          </div>
-
-          <div className="flex items-center gap-4 text-sm" style={{ color: ACCENT }}>
-            <a href="#" className="hover:underline">Advertise</a>
-            <a href="#" className="hover:underline">Sitemap</a>
-            <a href="#" className="hover:underline">Contact</a>
-          </div>
+        {/* DIVIDER */}
+        <div className="mt-10 border-t border-white/20 pt-4 text-center text-sm">
+          © {new Date().getFullYear()} Coupon-Hub · All Rights Reserved
         </div>
       </div>
 
-      {/* Back to top */}
+      {/* BACK TO TOP */}
       <button
         onClick={scrollTop}
         aria-label="Back to top"
-        className={`fixed right-5 bottom-5 z-50 p-3 rounded-full shadow-lg transform transition-opacity ${showBack ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        style={{ background: BEIGE, color: DARK_BG }}
+        className={`fixed right-6 bottom-6 p-3 rounded-full shadow-lg transition ${
+          showBack ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        style={{
+          background: "#ffffff",
+          color: "#6F1D2C",
+        }}
       >
         <ArrowUp size={16} />
       </button>
