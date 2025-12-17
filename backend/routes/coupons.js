@@ -1,56 +1,51 @@
-// backend/routes/coupons.js
 const express = require("express");
 const router = express.Router();
-
 const Coupon = require("../models/Coupon");
 const { requireAuth } = require("../middleware/auth");
 
 /**
- * GET /api/coupons
- * Public – fetch active coupons
+ * GET /api/coupons/my
+ * Coupons created by logged-in user
  */
-router.get("/", async (req, res) => {
+router.get("/my", requireAuth, async (req, res) => {
   try {
-    const coupons = await Coupon.find({
-      expiryDate: { $gte: new Date() }
-    }).sort({ createdAt: -1 });
+    const coupons = await Coupon.find({ createdBy: req.user.id })
+      .sort({ createdAt: -1 });
 
     res.json({ coupons });
   } catch (err) {
-    console.error("🔥 FETCH COUPONS ERROR:", err);
-    res.status(500).json({ message: "Failed to fetch coupons" });
+    console.error("My coupons error:", err);
+    res.status(500).json({ message: "Failed to fetch my coupons" });
   }
 });
 
 /**
- * POST /api/coupons
- * Protected – add coupon
+ * GET /api/coupons/saved
+ * Coupons saved by logged-in user
  */
-router.post("/", requireAuth, async (req, res) => {
+router.get("/saved", requireAuth, async (req, res) => {
   try {
-    const { title, store, category, code, description, expiryDate } = req.body;
+    const coupons = await Coupon.find({
+      savedBy: req.user.id, // array field
+    }).sort({ createdAt: -1 });
 
-    if (!title || !store || !code || !expiryDate) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    const coupon = await Coupon.create({
-      title,
-      store,
-      category: category || "General",
-      code,
-      description,
-      expiryDate: new Date(expiryDate),
-      createdBy: req.user.id,
-      verified: false
-    });
-
-    res.status(201).json({ message: "Coupon created", coupon });
-
+    res.json({ coupons });
   } catch (err) {
-    console.error("🔥 CREATE COUPON ERROR:", err);
-    res.status(500).json({ message: "Server error creating coupon" });
+    console.error("Saved coupons error:", err);
+    res.status(500).json({ message: "Failed to fetch saved coupons" });
   }
+});
+
+/**
+ * GET /api/coupons
+ * Public coupons list
+ */
+router.get("/", async (req, res) => {
+  const coupons = await Coupon.find({
+    expiryDate: { $gte: new Date() },
+  }).sort({ createdAt: -1 });
+
+  res.json({ coupons });
 });
 
 module.exports = router;

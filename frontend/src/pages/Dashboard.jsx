@@ -7,7 +7,7 @@ import { AuthContext } from "../contexts/AuthContext";
 const API_BASE = "http://localhost:5000/api";
 
 export default function Dashboard() {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [savedCoupons, setSavedCoupons] = useState([]);
@@ -17,13 +17,19 @@ export default function Dashboard() {
 
   /* ---------------- FETCH DASHBOARD DATA ---------------- */
   useEffect(() => {
+    // guard: wait until auth is ready
+    if (!user || !token) return;
+
     async function fetchDashboard() {
       try {
         setLoading(true);
+        setError("");
+
         const authHeader = {
           headers: {
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
+          withCredentials: true,
         };
 
         const [savedRes, myRes] = await Promise.all([
@@ -31,25 +37,57 @@ export default function Dashboard() {
           axios.get(`${API_BASE}/coupons/my`, authHeader),
         ]);
 
-        setSavedCoupons(savedRes.data.coupons || []);
-        setMyCoupons(myRes.data.coupons || []);
+        setSavedCoupons(savedRes.data?.coupons || []);
+        setMyCoupons(myRes.data?.coupons || []);
       } catch (err) {
-        console.error(err);
-        setError("Failed to load dashboard data");
+        console.error("Dashboard error:", err);
+
+        // 🔐 token invalid or expired
+        if (err.response?.status === 401) {
+          logout(); // clear auth context
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setError("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     }
 
     fetchDashboard();
-  }, [token]);
+  }, [user, token, logout, navigate]);
 
   /* ---------------- EDIT HANDLER ---------------- */
   const handleEdit = (id) => {
     navigate(`/edit-coupon/${id}`);
   };
 
+
+  const handleDelete = async (id) => {
+  if (!window.confirm("Delete this coupon?")) return;
+
+  try {
+    await axios.delete(`${API_BASE}/coupons/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // remove from UI instantly
+    setMyCoupons((prev) => prev.filter((c) => c._id !== id));
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete coupon");
+  }
+};
+
+
   /* ---------------- UI STATES ---------------- */
+  if (!user) {
+    return null; // ProtectedRoute will handle redirect
+  }
+
   if (loading) {
     return (
       <div className="py-20 text-center text-muted">
@@ -60,7 +98,7 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="py-20 text-center text-red-500">
+      <div className="py-20 text-center text-red-400">
         {error}
       </div>
     );
@@ -74,7 +112,7 @@ export default function Dashboard() {
           Dashboard
         </h2>
         <p className="mt-1 text-muted">
-          Welcome back, {user?.name || user?.email}
+          Welcome back, {user.name || user.email}
         </p>
       </div>
 
@@ -85,9 +123,9 @@ export default function Dashboard() {
         <StatCard title="Account Status" value="Active" accent />
       </div>
 
-      {/* COUPONS SECTION */}
+      {/* COUPONS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* LEFT — SAVED */}
+        {/* SAVED */}
         <div>
           <h3 className="text-lg font-semibold mb-3">
             Saved Coupons
@@ -104,7 +142,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* RIGHT — MY COUPONS */}
+        {/* MY COUPONS */}
         <div>
           <h3 className="text-lg font-semibold mb-3">
             My Coupons
@@ -117,13 +155,14 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {myCoupons.map((c) => (
-                <CouponRow
-                  key={c._id}
-                  coupon={c}
-                  editable
-                  onEdit={handleEdit}
-                />
-              ))}
+  <CouponRow
+    key={c._id}
+    coupon={c}
+    editable
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+  />
+))}
             </div>
           )}
         </div>
@@ -132,7 +171,7 @@ export default function Dashboard() {
   );
 }
 
-/* ---------------- SMALL REUSABLE COMPONENTS ---------------- */
+/* ---------------- SMALL COMPONENTS ---------------- */
 
 function StatCard({ title, value, accent }) {
   return (
@@ -149,9 +188,9 @@ function StatCard({ title, value, accent }) {
   );
 }
 
-function CouponRow({ coupon, editable = false, onEdit }) {
+function CouponRow({ coupon, editable = false, onEdit, onDelete }) {
   return (
-    <div className="card-default p-4 flex justify-between items-center">
+    <div className="card-default p-4 flex justify-between items-center gap-4">
       <div>
         <p className="font-medium">
           {coupon.title || coupon.store}
@@ -162,12 +201,21 @@ function CouponRow({ coupon, editable = false, onEdit }) {
       </div>
 
       {editable && (
-        <button
-          onClick={() => onEdit(coupon._id)}
-          className="px-3 py-1.5 text-sm rounded-lg btn-gradient"
-        >
-          Edit
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(coupon._id)}
+            className="px-3 py-1.5 text-sm rounded-lg btn-gradient"
+          >
+            Edit
+          </button>
+
+          <button
+            onClick={() => onDelete(coupon._id)}
+            className="px-3 py-1.5 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
       )}
     </div>
   );
