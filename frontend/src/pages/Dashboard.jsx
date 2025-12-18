@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -15,9 +14,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* ---------------- FETCH DASHBOARD DATA ---------------- */
+  /* ================= FETCH DASHBOARD DATA ================= */
   useEffect(() => {
-    // guard: wait until auth is ready
     if (!user || !token) return;
 
     async function fetchDashboard() {
@@ -25,16 +23,15 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        const authHeader = {
+        const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          withCredentials: true,
         };
 
         const [savedRes, myRes] = await Promise.all([
-          axios.get(`${API_BASE}/coupons/saved`, authHeader),
-          axios.get(`${API_BASE}/coupons/my`, authHeader),
+          axios.get(`${API_BASE}/coupons/saved/list`, config),
+          axios.get(`${API_BASE}/coupons/my/list`, config),
         ]);
 
         setSavedCoupons(savedRes.data?.coupons || []);
@@ -42,9 +39,8 @@ export default function Dashboard() {
       } catch (err) {
         console.error("Dashboard error:", err);
 
-        // 🔐 token invalid or expired
         if (err.response?.status === 401) {
-          logout(); // clear auth context
+          logout();
           navigate("/login", { replace: true });
           return;
         }
@@ -58,35 +54,30 @@ export default function Dashboard() {
     fetchDashboard();
   }, [user, token, logout, navigate]);
 
-  /* ---------------- EDIT HANDLER ---------------- */
+  /* ================= HANDLERS ================= */
   const handleEdit = (id) => {
     navigate(`/edit-coupon/${id}`);
   };
 
-
   const handleDelete = async (id) => {
-  if (!window.confirm("Delete this coupon?")) return;
+    if (!window.confirm("Delete this coupon?")) return;
 
-  try {
-    await axios.delete(`${API_BASE}/coupons/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      await axios.delete(`${API_BASE}/coupons/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    // remove from UI instantly
-    setMyCoupons((prev) => prev.filter((c) => c._id !== id));
-  } catch (err) {
-    console.error(err);
-    alert("Failed to delete coupon");
-  }
-};
+      setMyCoupons((prev) => prev.filter((c) => c._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete coupon");
+    }
+  };
 
-
-  /* ---------------- UI STATES ---------------- */
-  if (!user) {
-    return null; // ProtectedRoute will handle redirect
-  }
+  /* ================= UI STATES ================= */
+  if (!user) return null;
 
   if (loading) {
     return (
@@ -155,14 +146,14 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {myCoupons.map((c) => (
-  <CouponRow
-    key={c._id}
-    coupon={c}
-    editable
-    onEdit={handleEdit}
-    onDelete={handleDelete}
-  />
-))}
+                <CouponRow
+                  key={c._id}
+                  coupon={c}
+                  editable
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -171,7 +162,7 @@ export default function Dashboard() {
   );
 }
 
-/* ---------------- SMALL COMPONENTS ---------------- */
+/* ================= SMALL COMPONENTS ================= */
 
 function StatCard({ title, value, accent }) {
   return (

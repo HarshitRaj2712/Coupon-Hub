@@ -1,11 +1,18 @@
 // src/components/CouponModal.jsx
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import toast from "react-hot-toast";
-import { X, Copy, ExternalLink } from "lucide-react";
+import { X, Copy, ExternalLink, Bookmark } from "lucide-react";
+import axios from "axios";
+import { AuthContext } from "../contexts/AuthContext";
 import { trackEvent } from "../utils/analytics";
 
+const API_BASE = "http://localhost:5000/api";
+
 export default function CouponModal({ coupon, onClose }) {
+  const { user, token } = useContext(AuthContext);
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   if (!coupon) return null;
 
@@ -30,12 +37,51 @@ export default function CouponModal({ coupon, onClose }) {
       ? `₹${discountValue} OFF`
       : "Deal";
 
+  /* =========================
+     COPY COUPON
+  ========================= */
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
     setCopied(true);
     toast.success("Coupon copied!");
     trackEvent("copy_code", _id);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  /* =========================
+     SAVE / UNSAVE COUPON
+  ========================= */
+  const toggleSave = async () => {
+    if (!user) {
+      toast.error("Login required to save coupons");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      if (!saved) {
+        await axios.post(
+          `${API_BASE}/coupons/${_id}/save`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Coupon saved");
+        setSaved(true);
+        trackEvent("save_coupon", _id);
+      } else {
+        await axios.delete(
+          `${API_BASE}/coupons/${_id}/save`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success("Removed from saved");
+        setSaved(false);
+      }
+    } catch (err) {
+      toast.error("Action failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -75,7 +121,7 @@ export default function CouponModal({ coupon, onClose }) {
           </button>
         </div>
 
-        {/* COUPON CODE BOX */}
+        {/* COUPON CODE */}
         <div
           className="rounded-xl p-4 flex justify-between items-center"
           style={{
@@ -117,15 +163,33 @@ export default function CouponModal({ coupon, onClose }) {
               : "—"}
           </div>
 
-          <button
-            onClick={() => window.open(sourceUrl, "_blank")}
-            className="px-4 py-2 rounded-lg text-sm flex items-center gap-2
-                       hover:bg-[var(--bg-muted)] border"
-            style={{ borderColor: "var(--border-color)" }}
-          >
-            Go to Store
-            <ExternalLink size={14} />
-          </button>
+          <div className="flex gap-2">
+            {/* SAVE BUTTON */}
+            <button
+              onClick={toggleSave}
+              disabled={saving}
+              className="px-4 py-2 rounded-lg text-sm flex items-center gap-2 border
+                         hover:bg-[var(--bg-muted)] transition"
+              style={{ borderColor: "var(--border-color)" }}
+            >
+              <Bookmark
+                size={14}
+                className={saved ? "fill-current" : ""}
+              />
+              {saved ? "Saved" : "Save"}
+            </button>
+
+            {/* STORE LINK */}
+            <button
+              onClick={() => window.open(sourceUrl, "_blank")}
+              className="px-4 py-2 rounded-lg text-sm flex items-center gap-2
+                         hover:bg-[var(--bg-muted)] border"
+              style={{ borderColor: "var(--border-color)" }}
+            >
+              Go to Store
+              <ExternalLink size={14} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
