@@ -8,7 +8,7 @@ import React from "react";
    public/logos/flipkart.png
 =================================================== */
 const STORE_LOGOS = {
-  Amazon: "/public/amazon.png",
+  Amazon: "/amazon.png",
   Flipkart: "/public/flipkart.png",
   Myntra: "/public/myntra.png",
   Swiggy: "/public/swiggy.png",

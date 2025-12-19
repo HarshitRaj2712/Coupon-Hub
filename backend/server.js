@@ -14,7 +14,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://coupon-hub-six.vercel.app/"
+    "https://coupon-hub-six.vercel.app"
   ],
   credentials: true
 }));
