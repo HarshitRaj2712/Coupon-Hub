@@ -5,7 +5,7 @@ import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext";
 import { trackEvent } from "../utils/analytics";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 export default function CouponModal({ coupon, onClose }) {
   const { user, token } = useContext(AuthContext);

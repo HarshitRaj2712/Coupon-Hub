@@ -4,7 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { readEvents, clearEvents, trackEvent } from "../utils/analytics";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 /* ---------- helpers (localStorage based) ---------- */
 function getReportedStatus(id) {

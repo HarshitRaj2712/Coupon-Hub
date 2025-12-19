@@ -4,7 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { AuthContext } from "../contexts/AuthContext";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 /* CATEGORY OPTIONS */
 const CATEGORIES = [

@@ -5,7 +5,7 @@ import CouponList from "../components/CouponList";
 import HeroSlider from "../components/HeroSlider";
 import TopStores from "../components/TopStores";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 export default function Home() {
   const [coupons, setCoupons] = useState([]);
