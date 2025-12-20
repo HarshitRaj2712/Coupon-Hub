@@ -37,6 +37,29 @@ export default function CouponModal({ coupon, onClose }) {
     }
   }, [user, savedBy]);
 
+  /* ================= RECENTLY VIEWED (FRONTEND ONLY) ================= */
+useEffect(() => {
+  if (!coupon || !_id) return;
+
+  const existing =
+    JSON.parse(localStorage.getItem("recentCoupons")) || [];
+
+  const updated = [
+    {
+      _id,
+      title,
+      store,
+    },
+    ...existing.filter((c) => c._id !== _id),
+  ].slice(0, 6); // keep last 6 viewed
+
+  localStorage.setItem(
+    "recentCoupons",
+    JSON.stringify(updated)
+  );
+}, [_id, title, store]);
+
+
   const discountText =
     discountType === "percent"
       ? `${discountValue}% OFF`
