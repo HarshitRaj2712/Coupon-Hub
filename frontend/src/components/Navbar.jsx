@@ -22,47 +22,18 @@ export default function Navbar() {
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
- /* ================= THEME ================= */
-const [theme, setTheme] = useState(
-  localStorage.getItem("theme") || "light"
-);
-
-useEffect(() => {
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("theme", theme);
-}, [theme]);
-
-const toggleTheme = () => {
-  setTheme((prev) => (prev === "light" ? "dark" : "light"));
-};
-
-
-  /* ================= EFFECTS ================= */
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (open && menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
+  /* ================= THEME ================= */
+  const [theme, setTheme] = useState(
+    localStorage.getItem("theme") || "light"
+  );
 
   useEffect(() => {
-    function handleOutside(e) {
-      if (
-        profileOpen &&
-        profileRef.current &&
-        !profileRef.current.contains(e.target)
-      ) {
-        setProfileOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleOutside);
-  }, [profileOpen]);
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
   /* ================= ACTIONS ================= */
   const submitSearch = (e) => {
@@ -70,6 +41,7 @@ const toggleTheme = () => {
     window.dispatchEvent(
       new CustomEvent("globalSearch", { detail: { q } })
     );
+    setOpen(false);
     navigate("/");
   };
 
@@ -96,7 +68,7 @@ const toggleTheme = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setOpen((p) => !p)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-[var(--bg-muted)]"
+            className="md:hidden p-2 rounded-lg hover:bg-[var(--bg-muted)]"
           >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -114,7 +86,7 @@ const toggleTheme = () => {
             </div>
 
             <span
-              className="text-xl md:text-2xl font-extrabold tracking-wide"
+              className="text-xl font-extrabold tracking-wide"
               style={{
                 background:
                   "linear-gradient(135deg, var(--accent), var(--accent-hover))",
@@ -127,7 +99,7 @@ const toggleTheme = () => {
           </Link>
         </div>
 
-        {/* SEARCH (DESKTOP) */}
+        {/* DESKTOP SEARCH */}
         <form
           onSubmit={submitSearch}
           className="hidden md:flex flex-1 max-w-lg mx-6"
@@ -144,21 +116,13 @@ const toggleTheme = () => {
               className="w-full pl-9 pr-3 py-2 rounded-md input-default text-sm"
             />
           </div>
-
-          <button
-            type="submit"
-            className="btn-gradient ml-2 px-4 py-2 rounded-full text-sm"
-          >
-            Search
-          </button>
         </form>
 
-        {/* RIGHT */}
+        {/* DESKTOP RIGHT */}
         <div className="hidden md:flex items-center gap-3">
-          {/* THEME TOGGLE */}
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-full border hover:bg-[var(--bg-muted)]"
+            className="p-2 rounded-full border hover:bg-[var(--bg-muted)]"
             style={{ borderColor: "var(--border-color)" }}
           >
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -168,7 +132,7 @@ const toggleTheme = () => {
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setProfileOpen((p) => !p)}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-full hover:bg-[var(--bg-muted)]"
+                className="flex items-center gap-2 px-2 py-1 rounded-full hover:bg-[var(--bg-muted)]"
               >
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white"
@@ -193,7 +157,6 @@ const toggleTheme = () => {
                   >
                     Dashboard
                   </Link>
-
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--bg-muted)]"
@@ -211,7 +174,6 @@ const toggleTheme = () => {
               >
                 Login
               </Link>
-
               <Link
                 to="/signup"
                 className="btn-gradient px-4 py-1.5 rounded-full text-sm"
@@ -222,6 +184,70 @@ const toggleTheme = () => {
           )}
         </div>
       </div>
+
+      {/* ================= MOBILE MENU ================= */}
+      {open && (
+        <div
+          ref={menuRef}
+          className="md:hidden border-t"
+          style={{
+            background: "var(--bg-panel)",
+            borderColor: "var(--border-color)",
+          }}
+        >
+          <div className="p-4 space-y-4">
+            {/* MOBILE SEARCH */}
+            <form onSubmit={submitSearch} className="flex gap-2">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search..."
+                className="flex-1 p-2 rounded-md input-default text-sm"
+              />
+              <button className="btn-gradient px-4 py-2 text-sm">
+                Go
+              </button>
+            </form>
+
+            {/* LINKS */}
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="block text-sm"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="block text-sm"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setOpen(false)}>
+                  Login
+                </Link>
+                <Link to="/signup" onClick={() => setOpen(false)}>
+                  Signup
+                </Link>
+              </>
+            )}
+
+            {/* THEME */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 text-sm"
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              Toggle Theme
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
