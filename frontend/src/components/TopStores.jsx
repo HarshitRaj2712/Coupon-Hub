@@ -2,17 +2,17 @@
 import React from "react";
 
 /* ================= STORE LOGO MAP =================
-   Place logos in: public/logos/
+   Place logos in: public/
    Example:
-   public/logos/amazon.png
-   public/logos/flipkart.png
+   public/amazon.png
+   public/flipkart.png
 =================================================== */
 const STORE_LOGOS = {
   Amazon: "/amazon.png",
-  Flipkart: "/public/flipkart.png",
-  Myntra: "/public/myntra.png",
-  Swiggy: "/public/swiggy.png",
-  Zomato: "/public/zomato.png",
+  Flipkart: "/flipcart.png",
+  Myntra: "/mynta.png",
+  Swiggy: "/swiggy.png",
+  Zomato: "/zomato.png",
 };
 
 export default function TopStores({ coupons = [] }) {
@@ -23,7 +23,10 @@ export default function TopStores({ coupons = [] }) {
     return acc;
   }, {});
 
-  const stores = Object.keys(storeMap);
+  /* ✅ SHOW ONLY STORES THAT HAVE LOGOS */
+  const stores = Object.keys(storeMap).filter(
+    (store) => STORE_LOGOS[store]
+  );
 
   const onPick = (store) => {
     window.dispatchEvent(
@@ -36,12 +39,12 @@ export default function TopStores({ coupons = [] }) {
   return (
     <section className="my-12">
       <div className="container mx-auto px-4">
+
         {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">
             Top Stores
           </h2>
-          
         </div>
 
         {/* GRID */}
@@ -58,7 +61,7 @@ export default function TopStores({ coupons = [] }) {
                   color: "var(--text-main)",
                 }}
               >
-                {/* LOGO CONTAINER */}
+                {/* LOGO */}
                 <div
                   className="w-12 h-12 mx-auto mb-2 rounded-full
                              flex items-center justify-center"
@@ -66,25 +69,12 @@ export default function TopStores({ coupons = [] }) {
                     background: "var(--accent-soft)",
                   }}
                 >
-                  {STORE_LOGOS[store] ? (
-                    <img
-                      src={STORE_LOGOS[store]}
-                      alt={`${store} logo`}
-                      loading="lazy"             // ✅ LAZY LOADING
-                      className="w-8 h-8 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    /* FALLBACK LETTER */
-                    <span
-                      className="text-lg font-semibold"
-                      style={{ color: "var(--accent)" }}
-                    >
-                      {store[0]}
-                    </span>
-                  )}
+                  <img
+                    src={STORE_LOGOS[store]}
+                    alt={`${store} logo`}
+                    loading="lazy"
+                    className="w-8 h-8 object-contain"
+                  />
                 </div>
 
                 {/* STORE NAME */}

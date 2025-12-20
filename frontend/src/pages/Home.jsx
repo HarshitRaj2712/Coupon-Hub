@@ -104,28 +104,29 @@ export default function Home() {
       {/* TOP STORES */}
       <TopStores coupons={coupons} />
 
-      {/* COUPONS */}
-      <section id="coupons-section">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">
-            {filtered.length} Coupons Available
-          </h2>
+      {/* Coupons */}
+          <section id="coupons-section">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">
+                Deals of the Day
+              </h2>
 
-          {(filters.store || filters.category || filters.q) && (
-            <button
-              onClick={() =>
-                setFilters({ store: null, category: null, q: "" })
-              }
-              className="text-sm font-medium hover:underline"
-              style={{ color: "var(--accent)" }}
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
+              {(filters.store || filters.category || filters.q) && (
+                <button
+                  onClick={() =>
+                    setFilters({ store: null, category: null, q: "" })
+                  }
+                  className="text-sm text-indigo-600 hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
 
-        <CouponList coupons={filtered} />
-      </section>
+            {/* SHOW ONLY 10 COUPONS */}
+            <CouponList coupons={filtered.slice(0, 10)} />
+          </section>
+
     </div>
   );
 }
