@@ -4,6 +4,10 @@ import axios from "axios";
 import CouponList from "../components/CouponList";
 import HeroSlider from "../components/HeroSlider";
 import TopStores from "../components/TopStores";
+import CouponSkeleton from "../components/CouponSkeleton";
+import DealsOfTheDay from "../components/DealsOfDay";
+import RecentlyViewed from "../components/RecentlyViewed";
+
 
 const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
@@ -81,12 +85,13 @@ export default function Home() {
 
   /* ---------------- UI STATES ---------------- */
   if (loading) {
-    return (
-      <div className="text-center py-20 text-muted">
-        Loading coupons…
-      </div>
-    );
-  }
+  return (
+    <div className="py-10">
+      <CouponSkeleton />
+    </div>
+  );
+}
+
 
   if (error) {
     return (
@@ -97,36 +102,41 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-10">
-      {/* HERO */}
-      <HeroSlider />
+  <div className="space-y-10">
+    {/* 🔥 DEAL OF THE DAY (HIGHLIGHT STRIP) */}
+    <DealsOfTheDay coupons={coupons} />
 
-      {/* TOP STORES */}
-      <TopStores coupons={coupons} />
+    {/* HERO */}
+    <HeroSlider />
 
-      {/* Coupons */}
-          <section id="coupons-section">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">
-                Deals of the Day
-              </h2>
+    {/* TOP STORES */}
+    <TopStores coupons={coupons} />
 
-              {(filters.store || filters.category || filters.q) && (
-                <button
-                  onClick={() =>
-                    setFilters({ store: null, category: null, q: "" })
-                  }
-                  className="text-sm text-indigo-600 hover:underline"
-                >
-                  Clear filters
-                </button>
-              )}
-            </div>
+    {/* COUPONS */}
+    <section id="coupons-section">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">
+          Deals of the Day
+        </h2>
 
-            {/* SHOW ONLY 10 COUPONS */}
-            <CouponList coupons={filtered.slice(0, 10)} />
-          </section>
+        {(filters.store || filters.category || filters.q) && (
+          <button
+            onClick={() =>
+              setFilters({ store: null, category: null, q: "" })
+            }
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
 
-    </div>
-  );
+      {/* SHOW ONLY 10 COUPONS */}
+      <CouponList coupons={filtered.slice(0, 10)} />
+    </section>
+
+    {/* 👀 RECENTLY VIEWED */}
+    <RecentlyViewed />
+  </div>
+);
 }

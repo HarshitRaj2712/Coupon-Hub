@@ -46,12 +46,12 @@ export default function About() {
               role: "Full Stack Developer",
               about:
                 "Focused on building scalable backend APIs and secure authentication systems.",
-              github: "#",
-              linkedin: "#",
-              email: "mailto:harshit@example.com",
+              github: "https://github.com/HarshitRaj2712",
+              linkedin: "https://www.linkedin.com/in/harshit-raj-10931b282/",
+              email: "mailto:panditjee2712@example.com",
             },
             {
-              name: "Sujal",
+              name: "Manish",
               role: "Frontend Developer",
               about:
                 "Designed responsive UI and smooth user experience using React & Tailwind.",

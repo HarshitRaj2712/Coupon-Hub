@@ -1,7 +1,7 @@
-// src/components/DealOfTheDay.jsx
+// src/components/DealsOfTheDay.jsx
 import React, { useMemo } from "react";
 
-export default function DealOfTheDay({ coupons = [] }) {
+export default function DealsOfTheDay({ coupons = [] }) {
   const deal = useMemo(() => {
     if (!coupons.length) return null;
     return coupons[Math.floor(Math.random() * coupons.length)];
