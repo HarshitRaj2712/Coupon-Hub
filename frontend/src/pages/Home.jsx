@@ -116,7 +116,7 @@ export default function Home() {
     <section id="coupons-section">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">
-          Deals of the Day
+          Top Coupons
         </h2>
 
         {(filters.store || filters.category || filters.q) && (
