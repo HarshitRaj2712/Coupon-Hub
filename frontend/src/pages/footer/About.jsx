@@ -31,98 +31,68 @@ export default function About() {
       </section>
 
       {/* ================= TEAM ================= */}
-      <section className="py-20 px-4">
-        <h2 className="text-2xl md:text-3xl font-heading font-bold text-center mb-4">
-          Meet the Team
-        </h2>
-        <p className="text-center text-[var(--text-muted)] mb-12">
-          The developers behind CouponHub
-        </p>
+<section className="py-20 px-4">
+  <h2 className="text-2xl md:text-3xl font-heading font-bold text-center mb-4">
+    Meet the Developer
+  </h2>
+  <p className="text-center text-[var(--text-muted)] mb-12">
+    The mind behind CouponHub
+  </p>
 
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {[
-            {
-              name: "Harshit",
-              role: "Full Stack Developer",
-              about:
-                "Focused on building scalable backend APIs and secure authentication systems.",
-              github: "https://github.com/HarshitRaj2712",
-              linkedin: "https://www.linkedin.com/in/harshit-raj-10931b282/",
-              email: "mailto:panditjee2712@example.com",
-            },
-            {
-              name: "Manish",
-              role: "Frontend Developer",
-              about:
-                "Designed responsive UI and smooth user experience using React & Tailwind.",
-              github: "#",
-              linkedin: "#",
-              email: "mailto:sujal@example.com",
-            },
-            {
-              name: "Vansh",
-              role: "Backend & Database",
-              about:
-                "Handled MongoDB schema design and API optimization for performance.",
-              github: "#",
-              linkedin: "#",
-              email: "mailto:vansh@example.com",
-            },
-          ].map((member) => (
-            <div
-              key={member.name}
-              className="card-default p-6 text-center hover:shadow-xl transition"
-            >
-              {/* Avatar */}
-              <div
-                className="w-24 h-24 mx-auto rounded-full flex items-center justify-center text-2xl font-bold mb-4"
-                style={{
-                  background: "var(--accent-soft)",
-                  color: "var(--accent)",
-                }}
-              >
-                {member.name[0]}
-              </div>
+  <div className="max-w-md mx-auto">
+    <div className="card-default p-8 text-center hover:shadow-xl transition">
+      {/* Avatar */}
+      <div
+        className="w-28 h-28 mx-auto rounded-full flex items-center justify-center text-3xl font-bold mb-4"
+        style={{
+          background: "var(--accent-soft)",
+          color: "var(--accent)",
+        }}
+      >
+        H
+      </div>
 
-              <h3 className="text-lg font-semibold">{member.name}</h3>
-              <p className="text-sm text-[var(--text-muted)] mb-3">
-                {member.role}
-              </p>
-              <p className="text-sm text-[var(--text-muted)]">
-                {member.about}
-              </p>
+      <h3 className="text-xl font-semibold">Harshit Raj</h3>
+      <p className="text-sm text-[var(--text-muted)] mb-3">
+        Full Stack MERN Developer
+      </p>
 
-              {/* SOCIAL LINKS */}
-              <div className="flex justify-center gap-4 mt-5">
-                <a
-                  href={member.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
-                >
-                  <Github size={16} />
-                </a>
+      <p className="text-sm text-[var(--text-muted)]">
+        Focused on building scalable backend APIs, secure authentication,
+        and clean user experiences using the MERN stack.
+      </p>
 
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
-                >
-                  <Linkedin size={16} />
-                </a>
+      {/* SOCIAL LINKS */}
+      <div className="flex justify-center gap-5 mt-6">
+        <a
+          href="https://github.com/HarshitRaj2712"
+          target="_blank"
+          rel="noreferrer"
+          className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
+        >
+          <Github size={18} />
+        </a>
 
-                <a
-                  href={member.email}
-                  className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
-                >
-                  <Mail size={16} />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        <a
+          href="https://www.linkedin.com/in/harshit-raj-10931b282/"
+          target="_blank"
+          rel="noreferrer"
+          className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
+        >
+          <Linkedin size={18} />
+        </a>
+
+        <a
+          href="mailto:panditjee2712@example.com"
+          className="p-2 rounded-full hover:bg-[var(--bg-muted)] transition"
+        >
+          <Mail size={18} />
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 
       {/* ================= VALUES ================= */}
       <section className="py-20 bg-[#EFE6E4] px-4">
