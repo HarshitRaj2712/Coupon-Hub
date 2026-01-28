@@ -7,6 +7,8 @@ const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 export default function Dashboard() {
   const { user, token, logout } = useContext(AuthContext);
+  const accessToken = token || localStorage.getItem("token");
+
   const navigate = useNavigate();
 
   const [savedCoupons, setSavedCoupons] = useState([]);
@@ -24,15 +26,15 @@ export default function Dashboard() {
         setError("");
 
         const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+};
 
-        const [savedRes, myRes] = await Promise.all([
-          axios.get(`${API_BASE}/coupons/saved/list`, config),
-          axios.get(`${API_BASE}/coupons/my/list`, config),
-        ]);
+const [savedRes, myRes] = await Promise.all([
+  axios.get(`${API_BASE}/coupons/saved/list`, config),
+  axios.get(`${API_BASE}/coupons/my/list`, config),
+]);
 
         setSavedCoupons(savedRes.data?.coupons || []);
         setMyCoupons(myRes.data?.coupons || []);
@@ -64,10 +66,10 @@ export default function Dashboard() {
 
     try {
       await axios.delete(`${API_BASE}/coupons/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});
 
       setMyCoupons((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
