@@ -28,6 +28,12 @@ router.post("/", requireAuth, async (req, res) => {
 ============================ */
 router.get("/", async (req, res) => {
   try {
+    // 🔥 AUTO DELETE EXPIRED COUPONS
+    await Coupon.deleteMany({
+      expiryDate: { $lt: new Date() },
+    });
+
+    // ✅ FETCH ONLY VALID COUPONS
     const coupons = await Coupon.find({
       expiryDate: { $gte: new Date() },
     })
@@ -56,6 +62,11 @@ router.get("/:id", requireAuth, async (req, res) => {
       return res.status(404).json({ message: "Coupon not found" });
     }
 
+    // 🚫 BLOCK ACCESS TO EXPIRED COUPON
+    if (coupon.expiryDate < new Date()) {
+      return res.status(400).json({ message: "Coupon has expired" });
+    }
+
     res.json({ coupon });
   } catch (err) {
     console.error("Fetch coupon error:", err);
@@ -69,15 +80,24 @@ router.get("/:id", requireAuth, async (req, res) => {
 ============================ */
 router.put("/:id", requireAuth, async (req, res) => {
   try {
-    const coupon = await Coupon.findOneAndUpdate(
-      { _id: req.params.id, createdBy: req.user.id },
-      req.body,
-      { new: true }
-    );
+    const coupon = await Coupon.findOne({
+      _id: req.params.id,
+      createdBy: req.user.id,
+    });
 
     if (!coupon) {
       return res.status(404).json({ message: "Coupon not found" });
     }
+
+    // 🚫 PREVENT EDITING EXPIRED COUPONS
+    if (coupon.expiryDate < new Date()) {
+      return res
+        .status(400)
+        .json({ message: "Coupon has expired and cannot be edited" });
+    }
+
+    Object.assign(coupon, req.body);
+    await coupon.save();
 
     res.json({ coupon });
   } catch (err) {
@@ -110,12 +130,13 @@ router.delete("/:id", requireAuth, async (req, res) => {
 
 /* ============================
    MY COUPONS
-   GET /api/coupons/my
+   GET /api/coupons/my/list
 ============================ */
 router.get("/my/list", requireAuth, async (req, res) => {
   try {
     const coupons = await Coupon.find({
       createdBy: req.user.id,
+      expiryDate: { $gte: new Date() },
     }).sort({ createdAt: -1 });
 
     res.json({ coupons });
@@ -126,12 +147,13 @@ router.get("/my/list", requireAuth, async (req, res) => {
 
 /* ============================
    SAVED COUPONS
-   GET /api/coupons/saved
+   GET /api/coupons/saved/list
 ============================ */
 router.get("/saved/list", requireAuth, async (req, res) => {
   try {
     const coupons = await Coupon.find({
       savedBy: req.user.id,
+      expiryDate: { $gte: new Date() },
     });
 
     res.json({ coupons });
