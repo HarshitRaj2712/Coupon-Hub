@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -8,6 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AddCoupon from "./pages/AddCoupon";
+import EditCoupon from "./pages/EditCoupon";
 import AdminReports from "./pages/AdminReports";
 
 /* Footer pages */
@@ -86,12 +86,15 @@ export default function App() {
       <AuthProvider>
         <LayoutWrapper>
           <Routes>
+            {/* PUBLIC */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
+            {/* ADMIN */}
             <Route path="/admin/reports" element={<AdminReports />} />
 
+            {/* PROTECTED */}
             <Route
               path="/dashboard"
               element={
@@ -110,7 +113,16 @@ export default function App() {
               }
             />
 
-            {/* Footer pages */}
+            <Route
+              path="/edit-coupon/:id"
+              element={
+                <ProtectedRoute>
+                  <EditCoupon />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* FOOTER PAGES */}
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
