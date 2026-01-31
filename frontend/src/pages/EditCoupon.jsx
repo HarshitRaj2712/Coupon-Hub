@@ -115,76 +115,66 @@ export default function EditCoupon() {
       >
         {/* TITLE */}
         <div>
-          <label className="text-sm block mb-1">
-            Title *
-          </label>
+          <label className="text-sm block mb-1">Title *</label>
           <input
             name="title"
             value={form.title}
             onChange={handleChange}
             required
-            className="input-default w-full"
             placeholder="Flat 20% off on shoes"
+            className="input-default w-full px-4 py-2 rounded-md"
           />
         </div>
 
         {/* STORE */}
         <div>
-          <label className="text-sm block mb-1">
-            Store *
-          </label>
+          <label className="text-sm block mb-1">Store *</label>
           <input
             name="store"
             value={form.store}
             onChange={handleChange}
             required
-            className="input-default w-full"
             placeholder="Amazon, Flipkart…"
+            className="input-default w-full px-4 py-2 rounded-md"
           />
         </div>
 
         {/* CODE */}
         <div>
-          <label className="text-sm block mb-1">
-            Coupon Code *
-          </label>
+          <label className="text-sm block mb-1">Coupon Code *</label>
           <input
             name="code"
             value={form.code}
             onChange={handleChange}
             required
-            className="input-default w-full font-mono"
             placeholder="SAVE20"
+            className="input-default w-full px-4 py-2 rounded-md font-mono"
           />
         </div>
 
         {/* DESCRIPTION */}
         <div>
-          <label className="text-sm block mb-1">
-            Description
-          </label>
+          <label className="text-sm block mb-1">Description</label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
             rows={3}
-            className="input-default w-full"
             placeholder="Terms, min order value, etc."
+            className="input-default w-full px-4 py-2.5 rounded-md"
           />
         </div>
 
         {/* EXPIRY */}
         <div>
-          <label className="text-sm block mb-1">
-            Expiry Date *
-          </label>
+          <label className="text-sm block mb-1">Expiry Date *</label>
           <input
             type="date"
             name="expiryDate"
             value={form.expiryDate}
             onChange={handleChange}
             required
-            className="input-default w-full"
+            className="input-default w-full px-4 py-2 rounded-md"
           />
         </div>
 
@@ -201,7 +191,12 @@ export default function EditCoupon() {
           <button
             type="button"
             onClick={() => navigate("/dashboard")}
-            className="px-6 py-2 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition"
+            className="
+              px-6 py-2 rounded-md border transition
+              border-gray-400 dark:border-gray-600
+              text-[#6F1D2C] dark:text-gray-300
+              hover:bg-gray-100 dark:hover:bg-gray-800
+            "
           >
             Cancel
           </button>
