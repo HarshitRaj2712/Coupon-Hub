@@ -2,6 +2,8 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+import { isAdmin } from "../utils/auth";
+
 import {
   Search,
   ChevronDown,
@@ -13,9 +15,11 @@ import {
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
+  const admin = isAdmin(user);
+
   const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [open, setOpen] = useState(false);           // mobile search
+  const [profileOpen, setProfileOpen] = useState(false); // profile dropdown
 
   const menuRef = useRef(null);
   const profileRef = useRef(null);
@@ -46,23 +50,28 @@ export default function Navbar() {
   /* ================= CLOSE ON OUTSIDE CLICK ================= */
   useEffect(() => {
     function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        profileRef.current &&
+        !profileRef.current.contains(e.target)
+      ) {
         setOpen(false);
+        setProfileOpen(false);
       }
     }
 
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [open]);
+  }, []);
 
   const handleLogout = async () => {
+    setProfileOpen(false);
     await logout();
     navigate("/");
   };
@@ -73,7 +82,6 @@ export default function Navbar() {
   /* ================= UI ================= */
   return (
     <header
-      id="main-navbar"
       className="fixed top-0 left-0 w-full z-[9999]"
       style={{
         background: "var(--bg-panel)",
@@ -111,7 +119,10 @@ export default function Navbar() {
         <div className="flex items-center gap-2 md:hidden">
           {/* SEARCH */}
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              setProfileOpen(false);
+            }}
             className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
           >
             <Search size={20} />
@@ -125,14 +136,16 @@ export default function Navbar() {
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-          {/* LOGIN / PROFILE */}
+          {/* USER / LOGIN */}
           {user ? (
-            <div
+            <button
+              ref={profileRef}
+              onClick={() => setProfileOpen((p) => !p)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
               style={{ background: "var(--accent)" }}
             >
               {avatarInitial(user.name || user.email)}
-            </div>
+            </button>
           ) : (
             <button
               onClick={() => navigate("/login")}
@@ -195,6 +208,16 @@ export default function Navbar() {
                     border: "1px solid var(--border-color)",
                   }}
                 >
+                  {admin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setProfileOpen(false)}
+                      className="block px-4 py-2 text-sm hover:bg-[var(--bg-muted)]"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+
                   <Link
                     to="/dashboard"
                     onClick={() => setProfileOpen(false)}
@@ -202,16 +225,13 @@ export default function Navbar() {
                   >
                     Dashboard
                   </Link>
+
                   <button
-                    onClick={() => {
-                      setProfileOpen(false);
-                      handleLogout();
-                    }}
+                    onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--bg-muted)]"
                   >
                     Logout
                   </button>
-
                 </div>
               )}
             </div>
@@ -234,16 +254,17 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ================= MOBILE SEARCH PANEL ================= */}
+      {/* MOBILE SEARCH PANEL */}
       {open && (
         <div
+          ref={menuRef}
           className="md:hidden border-t"
           style={{
             background: "var(--bg-panel)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div ref={menuRef} className="p-4">
+          <div className="p-4">
             <form onSubmit={submitSearch}>
               <input
                 autoFocus
@@ -253,6 +274,41 @@ export default function Navbar() {
                 className="w-full p-2 rounded-md input-default text-sm"
               />
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MOBILE PROFILE DROPDOWN */}
+      {profileOpen && user && (
+        <div
+          className="md:hidden border-t"
+          style={{
+            background: "var(--bg-panel)",
+            borderColor: "var(--border-color)",
+          }}
+        >
+          <div className="p-4 space-y-3 text-sm">
+            {admin && (
+              <Link
+                to="/admin"
+                onClick={() => setProfileOpen(false)}
+                className="block"
+              >
+                Admin Dashboard
+              </Link>
+            )}
+
+            <Link
+              to="/dashboard"
+              onClick={() => setProfileOpen(false)}
+              className="block"
+            >
+              Dashboard
+            </Link>
+
+            <button onClick={handleLogout} className="block w-full text-left">
+              Logout
+            </button>
           </div>
         </div>
       )}

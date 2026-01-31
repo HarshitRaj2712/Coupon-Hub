@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Coupon = require("../models/Coupon");
 const { requireAuth } = require("../middleware/auth");
+const requireAdmin = require("../middleware/requireAdmin");
+
 
 /* ============================
    ADD COUPON
@@ -67,6 +69,9 @@ router.get("/:id", requireAuth, async (req, res) => {
     if (!coupon) {
       return res.status(404).json({ message: "Coupon not found" });
     }
+
+    await Coupon.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+
 
     // 🚫 BLOCK ACCESS TO EXPIRED COUPON
     if (coupon.expiryDate < new Date()) {
@@ -174,6 +179,7 @@ router.get("/saved/list", requireAuth, async (req, res) => {
 router.post("/:id/save", requireAuth, async (req, res) => {
   await Coupon.findByIdAndUpdate(req.params.id, {
     $addToSet: { savedBy: req.user.id },
+    $inc: { savesCount: 1 },
   });
   res.json({ saved: true });
 });
@@ -181,8 +187,56 @@ router.post("/:id/save", requireAuth, async (req, res) => {
 router.delete("/:id/save", requireAuth, async (req, res) => {
   await Coupon.findByIdAndUpdate(req.params.id, {
     $pull: { savedBy: req.user.id },
+    $inc: { savesCount: -1 },
   });
   res.json({ saved: false });
 });
+
+
+
+// ============================
+// ADMIN DELETE ANY COUPON
+// DELETE /api/coupons/admin/:id
+// ============================
+router.delete(
+  "/admin/:id",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const deleted = await Coupon.findByIdAndDelete(req.params.id);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Coupon not found" });
+      }
+
+      res.json({ message: "Coupon deleted by admin" });
+    } catch (err) {
+      res.status(500).json({ message: "Admin delete failed" });
+    }
+  }
+);
+
+// ============================
+// ADMIN: GET ALL COUPONS
+// GET /api/coupons/admin/all
+// ============================
+router.get(
+  "/admin/all",
+  requireAuth,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const coupons = await Coupon.find()
+        .sort({ createdAt: -1 })
+        .populate("createdBy", "name email");
+
+      res.json({ coupons });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch all coupons" });
+    }
+  }
+);
+
 
 module.exports = router;

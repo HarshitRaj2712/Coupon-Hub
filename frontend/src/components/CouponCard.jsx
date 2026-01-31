@@ -1,8 +1,12 @@
-// src/components/CouponCard.jsx
-import React from "react";
+import React, { useContext, useState } from "react";
+import api from "../api/axios";
+import { AuthContext } from "../contexts/AuthContext";
+import { isAdmin } from "../utils/auth";
+import toast from "react-hot-toast";
 
 export default function CouponCard({ coupon = {}, onShow = () => {} }) {
   const {
+    _id,
     code = "—",
     title = "",
     store = "Store",
@@ -12,6 +16,10 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
     verified,
   } = coupon;
 
+  const { user } = useContext(AuthContext);
+  const admin = isAdmin(user);
+  const [deleting, setDeleting] = useState(false);
+
   const discountText =
     discountType === "percent"
       ? `${discountValue}% OFF`
@@ -20,6 +28,22 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
       : discountValue
       ? `₹${discountValue} OFF`
       : "Deal";
+
+  /* ================= ADMIN DELETE ================= */
+  const handleAdminDelete = async () => {
+    if (!window.confirm("Delete this coupon permanently?")) return;
+
+    try {
+      setDeleting(true);
+      await api.delete(`/coupons/admin/${_id}`);
+      toast.success("Coupon deleted");
+      window.location.reload(); // simple & safe for now
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     /* RESPONSIVE HEIGHT CARD */
@@ -38,6 +62,8 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
         color: "var(--text-main)",
       }}
     >
+      
+
       {/* TOP CONTENT */}
       <div>
         <div className="flex items-start justify-between gap-3">
@@ -50,7 +76,7 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
             </div>
           </div>
 
-          {/* VERIFIED BADGE WITH ANIMATION */}
+          {/* VERIFIED BADGE */}
           {verified && (
             <span
               className="
@@ -85,7 +111,7 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
         </div>
       </div>
 
-      {/* BOTTOM CONTENT — PUSHED DOWN */}
+      {/* BOTTOM CONTENT */}
       <div className="mt-auto pt-4 flex items-center justify-between gap-2">
         <button
           onClick={onShow}
@@ -101,6 +127,30 @@ export default function CouponCard({ coupon = {}, onShow = () => {} }) {
             : "—"}
         </div>
       </div>
+
+      {/* ADMIN ACTION */}
+
+      {admin && (
+        <div className="mt-2 flex gap-4 text-xs text-muted">
+          <span>👁 {coupon.views || 0} views</span>
+          <span>⭐ {coupon.savesCount || 0} saves</span>
+        </div>
+      )}
+
+
+
+      {admin && (
+        <button
+          onClick={handleAdminDelete}
+          disabled={deleting}
+          className="
+            mt-3 text-xs text-red-600 hover:underline
+            disabled:opacity-50
+          "
+        >
+          {deleting ? "Deleting..." : "Delete (Admin)"}
+        </button>
+      )}
     </div>
   );
 }

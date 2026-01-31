@@ -48,10 +48,19 @@ const couponSchema = new mongoose.Schema(
     },
 
     expiryDate: {
-    type: Date,
-    required: true,
-    index: { expireAfterSeconds: 0 }, // 🔥 AUTO DELETE
-  },
+      type: Date,
+      required: true,
+      index: { expireAfterSeconds: 0 }, // 🔥 AUTO DELETE
+    },
+
+    views: {
+      type: Number,
+      default: 0,
+    },
+    savesCount: {
+      type: Number,
+      default: 0,
+    },
 
 
     verified: {

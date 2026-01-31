@@ -10,6 +10,7 @@ import AddCoupon from "./pages/AddCoupon";
 import EditCoupon from "./pages/EditCoupon";
 import AdminReports from "./pages/AdminReports";
 import SearchResults from "./pages/SearchResults";
+import AdminDashboard from "./pages/AdminDashboard";
 
 
 /* Footer pages */
@@ -26,6 +27,7 @@ import Navbar from "./components/Navbar";
 import SecondaryNav from "./components/SecondaryNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import FooterPro from "./components/FooterPro";
+import AdminRoute from "./components/AdminRoute";
 
 import "./App.css";
 
@@ -121,6 +123,15 @@ export default function App() {
                 <ProtectedRoute>
                   <EditCoupon />
                 </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
               }
             />
 
