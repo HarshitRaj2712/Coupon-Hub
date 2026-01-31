@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import AddCoupon from "./pages/AddCoupon";
 import EditCoupon from "./pages/EditCoupon";
 import AdminReports from "./pages/AdminReports";
+import SearchResults from "./pages/SearchResults";
+
 
 /* Footer pages */
 import About from "./pages/footer/About";
@@ -121,6 +123,9 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/search" element={<SearchResults />} />
+
 
             {/* FOOTER PAGES */}
             <Route path="/about" element={<About />} />

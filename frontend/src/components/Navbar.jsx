@@ -3,13 +3,13 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import {
-  Menu,
   X,
   Search,
   ChevronDown,
   Sun,
   Moon,
   TicketPercent,
+  User,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -38,12 +38,12 @@ export default function Navbar() {
   /* ================= ACTIONS ================= */
   const submitSearch = (e) => {
     e.preventDefault();
-    window.dispatchEvent(
-      new CustomEvent("globalSearch", { detail: { q } })
-    );
+    if (!q.trim()) return;
+
     setOpen(false);
-    navigate("/");
+    navigate(`/search?q=${encodeURIComponent(q.trim())}`);
   };
+
 
   const handleLogout = async () => {
     await logout();
@@ -63,40 +63,70 @@ export default function Navbar() {
         borderBottom: "1px solid var(--border-color)",
       }}
     >
+      {/* TOP BAR */}
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
-        {/* LEFT */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setOpen((p) => !p)}
-            className="md:hidden p-2 rounded-lg hover:bg-[var(--bg-muted)]"
+        {/* LOGO */}
+        <Link to="/" className="flex items-center gap-2">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--accent), var(--accent-hover))",
+            }}
           >
-            {open ? <X size={20} /> : <Menu size={20} />}
+            <TicketPercent size={16} color="#fff" />
+          </div>
+
+          <span
+            className="text-xl font-extrabold tracking-wide"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--accent), var(--accent-hover))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            COUPON-HUB
+          </span>
+        </Link>
+
+        {/* MOBILE RIGHT ICONS */}
+        <div className="flex items-center gap-2 md:hidden">
+          {/* SEARCH */}
+          <button
+            onClick={() => setOpen(true)}
+            className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
+            title="Search"
+          >
+            <Search size={20} />
           </button>
 
-          {/* LOGO */}
-          <Link to="/" className="flex items-center gap-2">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--accent), var(--accent-hover))",
-              }}
-            >
-              <TicketPercent size={16} color="#fff" />
-            </div>
+          {/* THEME */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
+            title="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
-            <span
-              className="text-xl font-extrabold tracking-wide"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--accent), var(--accent-hover))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
+          {/* PROFILE / LOGIN */}
+          {user ? (
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+              style={{ background: "var(--accent)" }}
             >
-              COUPON-HUB
-            </span>
-          </Link>
+              {avatarInitial(user.name || user.email)}
+            </div>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
+              title="Login"
+            >
+              <User size={20} />
+            </button>
+          )}
         </div>
 
         {/* DESKTOP SEARCH */}
@@ -185,7 +215,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ================= MOBILE MENU ================= */}
+      {/* ================= MOBILE SEARCH PANEL ================= */}
       {open && (
         <div
           ref={menuRef}
@@ -196,7 +226,6 @@ export default function Navbar() {
           }}
         >
           <div className="p-4 space-y-4">
-            {/* MOBILE SEARCH */}
             <form onSubmit={submitSearch} className="flex gap-2">
               <input
                 value={q}
@@ -207,44 +236,14 @@ export default function Navbar() {
               <button className="btn-gradient px-4 py-2 text-sm">
                 Go
               </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="p-2"
+              >
+                <X size={18} />
+              </button>
             </form>
-
-            {/* LINKS */}
-            {user ? (
-              <>
-                <Link
-                  to="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="block text-sm"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block text-sm"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" onClick={() => setOpen(false)}>
-                  Login
-                </Link>
-                <Link to="/signup" onClick={() => setOpen(false)}>
-                  Signup
-                </Link>
-              </>
-            )}
-
-            {/* THEME */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 text-sm"
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              Toggle Theme
-            </button>
           </div>
         </div>
       )}

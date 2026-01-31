@@ -28,24 +28,30 @@ router.post("/", requireAuth, async (req, res) => {
 ============================ */
 router.get("/", async (req, res) => {
   try {
-    // 🔥 AUTO DELETE EXPIRED COUPONS
-    await Coupon.deleteMany({
-      expiryDate: { $lt: new Date() },
-    });
+    const { search } = req.query;
 
-    // ✅ FETCH ONLY VALID COUPONS
-    const coupons = await Coupon.find({
+    const query = {
       expiryDate: { $gte: new Date() },
-    })
+    };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { store: { $regex: search, $options: "i" } },
+        { code: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const coupons = await Coupon.find(query)
       .sort({ createdAt: -1 })
       .populate("createdBy", "name email");
 
     res.json({ coupons });
-  } catch (err) {
-    console.error("Fetch coupons error:", err);
+  } catch {
     res.status(500).json({ message: "Failed to fetch coupons" });
   }
 });
+
 
 /* ============================
    GET SINGLE COUPON (EDIT)
