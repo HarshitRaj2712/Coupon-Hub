@@ -9,42 +9,60 @@ Built with production-ready authentication, role-based access, and a fully respo
 ---
 
 ## 🛠️ Tech Stack
-- Frontend
-React + Vite
-Tailwind CSS
-React Router
-Axios (with interceptors)
-Recharts (analytics)
-Lucide Icons
+🎨 Frontend
 
-- Backend
-Node.js
-Express.js
-MongoDB + Mongoose
+⚛️ React + Vite
 
----
+🎨 Tailwind CSS
 
-##✨ Features
-👤 User Features
+🧭 React Router
 
-Sign up / Login with JWT authentication
-Search coupons with dedicated results page
-View coupon details
-Save / Unsave coupons
-Responsive UI (mobile & desktop)
-Light / Dark mode
+🔁 Axios (with interceptors)
+
+📊 Recharts (analytics)
+
+🎯 Lucide Icons
+
+🧠 Backend
+
+🟢 Node.js
+
+🚂 Express.js
+
+🍃 MongoDB + Mongoose
 
 ---
 
-##🔐 Authentication & Security
+## ✨User Features
 
-Access token + refresh token flow
-Refresh token stored securely in HTTP-only cookies
-Axios interceptor for automatic token refresh
-Protected routes (User & Admin)
+🔐 Sign up / Login with JWT authentication
 
-Backend role verification for admin APIs
+🔎 Search coupons with a dedicated results page
 
-JWT Authentication (Access + Refresh tokens)
+👀 View coupon details
 
-Role-based Authorization---
+⭐ Save / Unsave coupons
+
+📱 Responsive UI (mobile & desktop)
+
+🌗 Light / Dark mode
+
+---
+
+## 🔐 Authentication & Security
+
+🔑 Access token + Refresh token flow
+
+🍪 Refresh token stored securely in HTTP-only cookies
+
+🔄 Axios interceptor for automatic token refresh
+
+🚧 Protected routes (User & Admin)
+
+🛂 Backend role verification for admin APIs
+
+🔐 JWT Authentication (Access + Refresh tokens)
+
+👥 Role-based Authorization
+
+---
