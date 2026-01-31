@@ -21,7 +21,7 @@ export default function SearchResults() {
   const [activeCoupon, setActiveCoupon] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
 
-  /* ================= FETCH RESULTS ================= */
+  /* ================= FETCH SEARCH RESULTS ================= */
   useEffect(() => {
     if (!q) return;
 
@@ -31,8 +31,9 @@ export default function SearchResults() {
         const res = await axios.get(
           `${API_BASE}/coupons?search=${encodeURIComponent(q)}`
         );
-        setCoupons(res.data.coupons);
-      } catch {
+        setCoupons(res.data.coupons || []);
+      } catch (err) {
+        console.error("Search fetch failed", err);
         setCoupons([]);
       } finally {
         setLoading(false);
@@ -51,55 +52,71 @@ export default function SearchResults() {
     setActiveCoupon(coupon);
   };
 
-  /* ================= SAVE ================= */
+  /* ================= SAVE COUPON ================= */
   const handleSave = async (id) => {
     if (!accessToken) {
       setShowLogin(true);
       return;
     }
 
-    await axios.post(
-      `${API_BASE}/coupons/${id}/save`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    try {
+      await axios.post(
+        `${API_BASE}/coupons/${id}/save`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    setCoupons((prev) =>
-      prev.map((c) =>
-        c._id === id
-          ? { ...c, savedBy: [...(c.savedBy || []), user._id] }
-          : c
-      )
-    );
+      setCoupons((prev) =>
+        prev.map((c) =>
+          c._id === id
+            ? {
+                ...c,
+                savedBy: [...(c.savedBy || []), user._id],
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error("Save coupon failed", err);
+    }
   };
 
-  /* ================= UNSAVE ================= */
+  /* ================= UNSAVE COUPON ================= */
   const handleUnsave = async (id) => {
-    await axios.delete(
-      `${API_BASE}/coupons/${id}/save`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    if (!accessToken) {
+      setShowLogin(true);
+      return;
+    }
 
-    setCoupons((prev) =>
-      prev.map((c) =>
-        c._id === id
-          ? {
-              ...c,
-              savedBy: (c.savedBy || []).filter(
-                (uid) => uid !== user._id
-              ),
-            }
-          : c
-      )
-    );
+    try {
+      await axios.delete(
+        `${API_BASE}/coupons/${id}/save`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      setCoupons((prev) =>
+        prev.map((c) =>
+          c._id === id
+            ? {
+                ...c,
+                savedBy: (c.savedBy || []).filter(
+                  (uid) => uid !== user._id
+                ),
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error("Unsave coupon failed", err);
+    }
   };
 
   return (
