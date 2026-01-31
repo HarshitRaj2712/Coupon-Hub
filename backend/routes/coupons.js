@@ -238,5 +238,28 @@ router.get(
   }
 );
 
+// ============================
+// ADMIN: GET ALL COUPONS
+// GET /api/coupons/admin/all
+// ============================
+router.get("/admin/all", requireAuth, async (req, res) => {
+  try {
+    // 🔒 Admin check
+    if (!req.user.roles?.includes("admin")) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const coupons = await Coupon.find({})
+      .sort({ createdAt: -1 })
+      .populate("createdBy", "name email");
+
+    res.json({ coupons });
+  } catch (err) {
+    console.error("Admin fetch all coupons error:", err);
+    res.status(500).json({ message: "Failed to fetch coupons" });
+  }
+});
+
+
 
 module.exports = router;
