@@ -13,7 +13,8 @@ export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
 
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
+  const accessToken = token || localStorage.getItem("token");
 
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +51,57 @@ export default function SearchResults() {
     setActiveCoupon(coupon);
   };
 
+  /* ================= SAVE ================= */
+  const handleSave = async (id) => {
+    if (!accessToken) {
+      setShowLogin(true);
+      return;
+    }
+
+    await axios.post(
+      `${API_BASE}/coupons/${id}/save`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    setCoupons((prev) =>
+      prev.map((c) =>
+        c._id === id
+          ? { ...c, savedBy: [...(c.savedBy || []), user._id] }
+          : c
+      )
+    );
+  };
+
+  /* ================= UNSAVE ================= */
+  const handleUnsave = async (id) => {
+    await axios.delete(
+      `${API_BASE}/coupons/${id}/save`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    setCoupons((prev) =>
+      prev.map((c) =>
+        c._id === id
+          ? {
+              ...c,
+              savedBy: (c.savedBy || []).filter(
+                (uid) => uid !== user._id
+              ),
+            }
+          : c
+      )
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 pt-24">
       <h1 className="text-xl font-semibold mb-4">
@@ -65,6 +117,8 @@ export default function SearchResults() {
               key={c._id}
               coupon={c}
               onShow={() => handleShowCoupon(c)}
+              onSave={() => handleSave(c._id)}
+              onUnsave={() => handleUnsave(c._id)}
             />
           ))}
         </div>
