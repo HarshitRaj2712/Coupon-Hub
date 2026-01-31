@@ -3,7 +3,6 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import {
-  X,
   Search,
   ChevronDown,
   Sun,
@@ -35,7 +34,7 @@ export default function Navbar() {
   const toggleTheme = () =>
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
-  /* ================= ACTIONS ================= */
+  /* ================= SEARCH ================= */
   const submitSearch = (e) => {
     e.preventDefault();
     if (!q.trim()) return;
@@ -44,6 +43,24 @@ export default function Navbar() {
     navigate(`/search?q=${encodeURIComponent(q.trim())}`);
   };
 
+  /* ================= CLOSE ON OUTSIDE CLICK ================= */
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [open]);
 
   const handleLogout = async () => {
     await logout();
@@ -96,7 +113,6 @@ export default function Navbar() {
           <button
             onClick={() => setOpen(true)}
             className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
-            title="Search"
           >
             <Search size={20} />
           </button>
@@ -105,12 +121,11 @@ export default function Navbar() {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
-            title="Toggle theme"
           >
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-          {/* PROFILE / LOGIN */}
+          {/* LOGIN / PROFILE */}
           {user ? (
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
@@ -122,7 +137,6 @@ export default function Navbar() {
             <button
               onClick={() => navigate("/login")}
               className="p-2 rounded-full hover:bg-[var(--bg-muted)]"
-              title="Login"
             >
               <User size={20} />
             </button>
@@ -183,16 +197,21 @@ export default function Navbar() {
                 >
                   <Link
                     to="/dashboard"
+                    onClick={() => setProfileOpen(false)}
                     className="block px-4 py-2 text-sm hover:bg-[var(--bg-muted)]"
                   >
                     Dashboard
                   </Link>
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      setProfileOpen(false);
+                      handleLogout();
+                    }}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-[var(--bg-muted)]"
                   >
                     Logout
                   </button>
+
                 </div>
               )}
             </div>
@@ -218,31 +237,21 @@ export default function Navbar() {
       {/* ================= MOBILE SEARCH PANEL ================= */}
       {open && (
         <div
-          ref={menuRef}
           className="md:hidden border-t"
           style={{
             background: "var(--bg-panel)",
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="p-4 space-y-4">
-            <form onSubmit={submitSearch} className="flex gap-2">
+          <div ref={menuRef} className="p-4">
+            <form onSubmit={submitSearch}>
               <input
+                autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search..."
-                className="flex-1 p-2 rounded-md input-default text-sm"
+                className="w-full p-2 rounded-md input-default text-sm"
               />
-              <button className="btn-gradient px-4 py-2 text-sm">
-                Go
-              </button>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="p-2"
-              >
-                <X size={18} />
-              </button>
             </form>
           </div>
         </div>
