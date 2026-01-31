@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* ================= LOAD SESSION ON START ================= */
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -21,18 +20,15 @@ export function AuthProvider({ children }) {
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
 
     setLoading(false);
   }, []);
 
-  /* ================= LOGIN ================= */
   const login = async ({ email, password }) => {
     const res = await api.post(
-      "/auth/login",
+      "/auth/login",   // ✅ NO /api here
       { email, password },
       { withCredentials: true }
     );
@@ -41,15 +37,13 @@ export function AuthProvider({ children }) {
 
     setToken(accessToken);
     setUser(userPayload);
-
     setAccessToken(accessToken);
     localStorage.setItem("user", JSON.stringify(userPayload));
   };
 
-  /* ================= SIGNUP ================= */
   const signup = async ({ name, email, password }) => {
     const res = await api.post(
-      "/auth/signup",
+      "/auth/signup",  // ✅ NO /api here
       { name, email, password },
       { withCredentials: true }
     );
@@ -58,18 +52,14 @@ export function AuthProvider({ children }) {
 
     setToken(accessToken);
     setUser(userPayload);
-
     setAccessToken(accessToken);
     localStorage.setItem("user", JSON.stringify(userPayload));
   };
 
-  /* ================= LOGOUT ================= */
   const logout = async () => {
     try {
       await api.post("/auth/logout", null, { withCredentials: true });
-    } catch {
-      // ignore logout network errors
-    }
+    } catch {}
 
     setUser(null);
     setToken(null);
@@ -78,14 +68,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        token,
-        loading,
-        login,
-        signup,
-        logout,
-      }}
+      value={{ user, token, loading, login, signup, logout }}
     >
       {children}
     </AuthContext.Provider>
