@@ -49,26 +49,35 @@ export default function Navbar() {
 
   /* ================= CLOSE ON OUTSIDE CLICK ================= */
   useEffect(() => {
-    function handleClickOutside(e) {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(e.target) &&
-        profileRef.current &&
-        !profileRef.current.contains(e.target)
-      ) {
-        setOpen(false);
-        setProfileOpen(false);
-      }
+  function handleClickOutside(e) {
+    // close search if click outside
+    if (
+      open &&
+      menuRef.current &&
+      !menuRef.current.contains(e.target)
+    ) {
+      setOpen(false);
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
+    // close profile dropdown if click outside
+    if (
+      profileOpen &&
+      profileRef.current &&
+      !profileRef.current.contains(e.target)
+    ) {
+      setProfileOpen(false);
+    }
+  }
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, []);
+  document.addEventListener("mousedown", handleClickOutside);
+  document.addEventListener("touchstart", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("touchstart", handleClickOutside);
+  };
+}, [open, profileOpen]);
+
 
   const handleLogout = async () => {
     setProfileOpen(false);
@@ -279,39 +288,54 @@ export default function Navbar() {
       )}
 
       {/* MOBILE PROFILE DROPDOWN */}
-      {profileOpen && user && (
-        <div
-          className="md:hidden border-t"
-          style={{
-            background: "var(--bg-panel)",
-            borderColor: "var(--border-color)",
-          }}
+      {/* MOBILE PROFILE DROPDOWN (FLOATING) */}
+{profileOpen && user && (
+  <div
+    ref={profileRef}
+    className="
+      md:hidden
+      absolute
+      top-14
+      right-4
+      w-48
+      rounded-xl
+      shadow-lg
+      z-[10000]
+    "
+    style={{
+      background: "var(--bg-panel)",
+      border: "1px solid var(--border-color)",
+    }}
+  >
+    <div className="py-2 text-sm">
+      {admin && (
+        <Link
+          to="/admin"
+          onClick={() => setProfileOpen(false)}
+          className="block px-4 py-2 hover:bg-[var(--bg-muted)]"
         >
-          <div className="p-4 space-y-3 text-sm">
-            {admin && (
-              <Link
-                to="/admin"
-                onClick={() => setProfileOpen(false)}
-                className="block"
-              >
-                Admin Dashboard
-              </Link>
-            )}
-
-            <Link
-              to="/dashboard"
-              onClick={() => setProfileOpen(false)}
-              className="block"
-            >
-              Dashboard
-            </Link>
-
-            <button onClick={handleLogout} className="block w-full text-left">
-              Logout
-            </button>
-          </div>
-        </div>
+          Admin Dashboard
+        </Link>
       )}
+
+      <Link
+        to="/dashboard"
+        onClick={() => setProfileOpen(false)}
+        className="block px-4 py-2 hover:bg-[var(--bg-muted)]"
+      >
+        Dashboard
+      </Link>
+
+      <button
+        onClick={handleLogout}
+        className="w-full text-left px-4 py-2 hover:bg-[var(--bg-muted)]"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+)}
+
     </header>
   );
 }

@@ -68,7 +68,7 @@ function LayoutWrapper({ children }) {
       <SecondaryNav />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1">
+      <main className="flex-1 mt-18">
         <div
           className={isAuthPage ? "" : "container mx-auto p-4"}
           style={{ paddingTop: `${topOffset}px` }}
