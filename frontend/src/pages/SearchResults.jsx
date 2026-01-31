@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import CouponCard from "../components/CouponCard";
 import CouponSkeleton from "../components/CouponSkeleton";
+import CouponModal from "../components/CouponModal";
+import LoginRequiredModal from "../components/LoginRequiredModal";
+import { AuthContext } from "../contexts/AuthContext";
 
 const API_BASE = "https://coupon-hub-1.onrender.com/api";
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
+
+  const { user } = useContext(AuthContext);
+
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeCoupon, setActiveCoupon] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
 
+  /* ================= FETCH RESULTS ================= */
   useEffect(() => {
     if (!q) return;
 
@@ -32,6 +41,15 @@ export default function SearchResults() {
     fetchResults();
   }, [q]);
 
+  /* ================= SHOW COUPON ================= */
+  const handleShowCoupon = (coupon) => {
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    setActiveCoupon(coupon);
+  };
+
   return (
     <div className="container mx-auto px-4 pt-24">
       <h1 className="text-xl font-semibold mb-4">
@@ -43,11 +61,29 @@ export default function SearchResults() {
       ) : coupons.length ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {coupons.map((c) => (
-            <CouponCard key={c._id} coupon={c} />
+            <CouponCard
+              key={c._id}
+              coupon={c}
+              onShow={() => handleShowCoupon(c)}
+            />
           ))}
         </div>
       ) : (
         <p className="text-muted">No results found.</p>
+      )}
+
+      {/* LOGIN REQUIRED MODAL */}
+      <LoginRequiredModal
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+      />
+
+      {/* COUPON MODAL */}
+      {activeCoupon && (
+        <CouponModal
+          coupon={activeCoupon}
+          onClose={() => setActiveCoupon(null)}
+        />
       )}
     </div>
   );
