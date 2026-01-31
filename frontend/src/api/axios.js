@@ -1,40 +1,35 @@
 // src/api/axios.js
-import axios from "axios";
+import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
 const api = axios.create({
-  baseURL: API_BASE + "/api",
-  headers: { "Content-Type": "application/json" },
-  withCredentials: true, // refresh token cookie
+  baseURL: API_BASE + '/api',
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true // IMPORTANT: allows sending/receiving cookies (refresh token)
 });
 
 // --------------------
 // ACCESS TOKEN HELPERS
 // --------------------
 export function getAccessToken() {
-  // ✅ FIX: use SAME key used everywhere else
-  return localStorage.getItem("token");
+  return localStorage.getItem('accessToken');
 }
 
 export function setAccessToken(token) {
-  if (token) localStorage.setItem("token", token);
-  else localStorage.removeItem("token");
+  if (token) localStorage.setItem('accessToken', token);
+  else localStorage.removeItem('accessToken');
 }
 
 export function clearSession() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('user');
 }
 
-// --------------------
-// REQUEST INTERCEPTOR
-// --------------------
+// Attach access token to every request
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -45,7 +40,7 @@ let isRefreshing = false;
 let subscribers = [];
 
 function onNewToken(token) {
-  subscribers.forEach((cb) => cb(token));
+  subscribers.forEach(cb => cb(token));
   subscribers = [];
 }
 
@@ -54,25 +49,28 @@ function addSubscriber(cb) {
 }
 
 api.interceptors.response.use(
-  (res) => res,
+  res => res,
 
   async (err) => {
     const originalRequest = err.config;
+
     if (!originalRequest) return Promise.reject(err);
 
-    if (err.response?.status === 401 && !originalRequest._retry) {
+    if (err.response && err.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // If refresh is already happening → queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           addSubscriber((token) => {
-            if (!token) return reject(err);
+            if (!token) return reject(new Error("Failed to refresh token"));
             originalRequest.headers.Authorization = `Bearer ${token}`;
             resolve(api(originalRequest));
           });
         });
       }
 
+      // Start refresh
       isRefreshing = true;
 
       try {
@@ -83,18 +81,19 @@ api.interceptors.response.use(
         );
 
         const newAccessToken = refreshResponse.data?.accessToken;
-        if (!newAccessToken) throw new Error("No access token");
+        if (!newAccessToken) throw new Error("No access token received");
 
         setAccessToken(newAccessToken);
         api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
 
         onNewToken(newAccessToken);
 
+        // retry original request
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        onNewToken(null);
-        clearSession();
+        onNewToken(null);        // notify listeners that refresh failed
+        clearSession();          // clear local session
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
