@@ -40,6 +40,12 @@ export default function AddCoupon() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Expiry date validation
+    if (!isExpiryValid(form.expiryDate)) {
+      toast.error("Expiry date must be at least 2 days after today");
+      return;
+    }
+
     if (!user) {
       toast.error("Please login to add a coupon");
       return;
@@ -54,7 +60,7 @@ export default function AddCoupon() {
     try {
       setLoading(true);
 
-      const res = await axios.post(
+      await axios.post(
         `${API_BASE}/coupons`,
         form,
         {
@@ -82,6 +88,20 @@ export default function AddCoupon() {
     }
   };
 
+  // ✅ Expiry validation helper
+  function isExpiryValid(expiryDate) {
+    if (!expiryDate) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const minExpiry = new Date(today);
+    minExpiry.setDate(minExpiry.getDate() + 2);
+
+    const selectedDate = new Date(expiryDate);
+    return selectedDate > minExpiry;
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* HEADER */}
@@ -101,9 +121,7 @@ export default function AddCoupon() {
         {/* ROW 1 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm block mb-1">
-              Title *
-            </label>
+            <label className="text-sm block mb-1">Title *</label>
             <input
               name="title"
               value={form.title}
@@ -115,9 +133,7 @@ export default function AddCoupon() {
           </div>
 
           <div>
-            <label className="text-sm block mb-1">
-              Store *
-            </label>
+            <label className="text-sm block mb-1">Store *</label>
             <input
               name="store"
               value={form.store}
@@ -131,11 +147,8 @@ export default function AddCoupon() {
 
         {/* ROW 2 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* CATEGORY DROPDOWN */}
           <div>
-            <label className="text-sm block mb-1">
-              Category *
-            </label>
+            <label className="text-sm block mb-1">Category *</label>
             <select
               name="category"
               value={form.category}
@@ -145,23 +158,22 @@ export default function AddCoupon() {
             >
               <option value="">Select category</option>
               {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-sm block mb-1">
-              Expiry Date *
-            </label>
+            <label className="text-sm block mb-1">Expiry Date *</label>
             <input
               type="date"
               name="expiryDate"
               value={form.expiryDate}
               onChange={handleChange}
               required
+              min={new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0]}
               className="w-full p-2 rounded input-default"
             />
           </div>
@@ -169,9 +181,7 @@ export default function AddCoupon() {
 
         {/* COUPON CODE */}
         <div>
-          <label className="text-sm block mb-1">
-            Coupon Code *
-          </label>
+          <label className="text-sm block mb-1">Coupon Code *</label>
           <input
             name="code"
             value={form.code}
@@ -184,9 +194,7 @@ export default function AddCoupon() {
 
         {/* DESCRIPTION */}
         <div>
-          <label className="text-sm block mb-1">
-            Description
-          </label>
+          <label className="text-sm block mb-1">Description</label>
           <textarea
             name="description"
             value={form.description}

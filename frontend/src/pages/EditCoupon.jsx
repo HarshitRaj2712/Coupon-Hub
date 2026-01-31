@@ -11,6 +11,8 @@ export default function EditCoupon() {
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
 
+  const accessToken = token || localStorage.getItem("token");
+
   const [form, setForm] = useState({
     title: "",
     store: "",
@@ -23,7 +25,7 @@ export default function EditCoupon() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  /* FETCH COUPON */
+  /* ================= FETCH COUPON ================= */
   useEffect(() => {
     async function fetchCoupon() {
       try {
@@ -31,7 +33,7 @@ export default function EditCoupon() {
           `${API_BASE}/coupons/${id}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           }
         );
@@ -54,13 +56,13 @@ export default function EditCoupon() {
     }
 
     fetchCoupon();
-  }, [id, token, navigate]);
+  }, [id, accessToken, navigate]);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  /* UPDATE */
+  /* ================= UPDATE ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -72,7 +74,7 @@ export default function EditCoupon() {
         form,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -87,64 +89,123 @@ export default function EditCoupon() {
   };
 
   if (loading) {
-    return <div className="py-20 text-center">Loading coupon…</div>;
+    return (
+      <div className="py-20 text-center text-muted">
+        Loading coupon…
+      </div>
+    );
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Edit Coupon</h1>
+      {/* HEADER */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-heading font-bold">
+          Edit Coupon
+        </h1>
+        <p className="text-sm text-muted mt-1">
+          Update coupon details carefully
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 card-default p-5">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Title"
-          required
-          className="input-default w-full"
-        />
+      {/* FORM */}
+      <form
+        onSubmit={handleSubmit}
+        className="card-default p-6 space-y-4"
+      >
+        {/* TITLE */}
+        <div>
+          <label className="text-sm block mb-1">
+            Title *
+          </label>
+          <input
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            required
+            className="input-default w-full"
+            placeholder="Flat 20% off on shoes"
+          />
+        </div>
 
-        <input
-          name="store"
-          value={form.store}
-          onChange={handleChange}
-          placeholder="Store"
-          required
-          className="input-default w-full"
-        />
+        {/* STORE */}
+        <div>
+          <label className="text-sm block mb-1">
+            Store *
+          </label>
+          <input
+            name="store"
+            value={form.store}
+            onChange={handleChange}
+            required
+            className="input-default w-full"
+            placeholder="Amazon, Flipkart…"
+          />
+        </div>
 
-        <input
-          name="code"
-          value={form.code}
-          onChange={handleChange}
-          placeholder="Code"
-          required
-          className="input-default w-full font-mono"
-        />
+        {/* CODE */}
+        <div>
+          <label className="text-sm block mb-1">
+            Coupon Code *
+          </label>
+          <input
+            name="code"
+            value={form.code}
+            onChange={handleChange}
+            required
+            className="input-default w-full font-mono"
+            placeholder="SAVE20"
+          />
+        </div>
 
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="input-default w-full"
-        />
+        {/* DESCRIPTION */}
+        <div>
+          <label className="text-sm block mb-1">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            rows={3}
+            className="input-default w-full"
+            placeholder="Terms, min order value, etc."
+          />
+        </div>
 
-        <input
-          type="date"
-          name="expiryDate"
-          value={form.expiryDate}
-          onChange={handleChange}
-          required
-          className="input-default w-full"
-        />
+        {/* EXPIRY */}
+        <div>
+          <label className="text-sm block mb-1">
+            Expiry Date *
+          </label>
+          <input
+            type="date"
+            name="expiryDate"
+            value={form.expiryDate}
+            onChange={handleChange}
+            required
+            className="input-default w-full"
+          />
+        </div>
 
-        <button
-          disabled={saving}
-          className="btn-gradient px-6 py-2"
-        >
-          {saving ? "Saving..." : "Update Coupon"}
-        </button>
+        {/* ACTIONS */}
+        <div className="flex items-center gap-3 pt-4">
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-gradient px-6 py-2 rounded-md"
+          >
+            {saving ? "Saving..." : "Update Coupon"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            className="px-6 py-2 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
