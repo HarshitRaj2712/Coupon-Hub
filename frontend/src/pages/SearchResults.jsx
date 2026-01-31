@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../api/axios";
 import CouponCard from "../components/CouponCard";
 import CouponSkeleton from "../components/CouponSkeleton";
 import CouponModal from "../components/CouponModal";
@@ -64,9 +64,7 @@ export default function SearchResults() {
         `${API_BASE}/coupons/${id}/save`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          
         }
       );
 
