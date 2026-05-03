@@ -4,8 +4,10 @@ import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const location = useLocation();
+
+  if (loading) return null;
 
   if (!user) {
     return (
