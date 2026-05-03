@@ -22,7 +22,8 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false); // profile dropdown
 
   const menuRef = useRef(null);
-  const profileRef = useRef(null);
+  const profileRef = useRef(null);  // desktop profile
+  const mobileProfileRef = useRef(null);  // mobile profile
   const navigate = useNavigate();
 
   /* ================= THEME ================= */
@@ -59,11 +60,13 @@ export default function Navbar() {
       setOpen(false);
     }
 
-    // close profile dropdown if click outside
+    // close profile dropdown if click outside (check both desktop and mobile refs)
     if (
       profileOpen &&
       profileRef.current &&
-      !profileRef.current.contains(e.target)
+      !profileRef.current.contains(e.target) &&
+      mobileProfileRef.current &&
+      !mobileProfileRef.current.contains(e.target)
     ) {
       setProfileOpen(false);
     }
@@ -291,7 +294,7 @@ export default function Navbar() {
       {/* MOBILE PROFILE DROPDOWN (FLOATING) */}
 {profileOpen && user && (
   <div
-    ref={profileRef}
+    ref={mobileProfileRef}
     className="
       md:hidden
       absolute
