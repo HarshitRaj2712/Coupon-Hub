@@ -211,7 +211,7 @@ export default function Navbar() {
 
               {profileOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg py-2"
+                  className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg py-2 z-[10000]"
                   style={{
                     background: "var(--bg-panel)",
                     border: "1px solid var(--border-color)",
