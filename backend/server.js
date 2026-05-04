@@ -1,5 +1,6 @@
 // backend/server.js
 const express = require("express");
+const compression = require("compression");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -18,6 +19,9 @@ app.use(cors({
   ],
   credentials: true
 }));
+
+// enable gzip/deflate compression for responses
+app.use(compression());
 
 app.use(express.json());
 app.use(cookieParser());
