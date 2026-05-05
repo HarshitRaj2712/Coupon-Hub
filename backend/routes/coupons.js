@@ -30,7 +30,10 @@ router.post("/", requireAuth, async (req, res) => {
 ============================ */
 router.get("/", async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 20 } = req.query;
+
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(parseInt(limit, 10) || 20, 100); // cap at 100
 
     const query = {
       expiryDate: { $gte: new Date() },
@@ -44,11 +47,18 @@ router.get("/", async (req, res) => {
       ];
     }
 
+    const total = await Coupon.countDocuments(query);
+
     const coupons = await Coupon.find(query)
       .sort({ createdAt: -1 })
-      .populate("createdBy", "name email");
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .populate("createdBy", "name email")
+      .lean();
 
-    res.json({ coupons });
+    const totalPages = Math.ceil(total / limitNum);
+
+    res.json({ coupons, total, page: pageNum, totalPages });
   } catch {
     res.status(500).json({ message: "Failed to fetch coupons" });
   }
