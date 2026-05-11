@@ -10,7 +10,7 @@ Live demo: https://coupon-hub-six.vercel.app/
 
 License: ISC
 
-## ⚡ Quick Jump
+## ⚡ Quick Jum
 
 - [🎯 Overview](#-overview)
 - [✨ Features](#-features)
